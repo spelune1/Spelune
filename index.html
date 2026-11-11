@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pivovar Rudohor - Objednávková kalkulačka</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- HTML5 QR / Barcode Scanner CDN -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<!-- QRious Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+<!-- JsBarcode Library -->
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+<script>
+tailwind.config = {
+theme: {
+extend: {
+colors: {
+brand: '#ff9800',
+brandDark: '#e68a00',
+darkBg: '#0f0f11',
+cardBg: '#18181c',
+cardBorder: '#282830',
+}
+}
+}
+}
+</script>
+<style>
+body {
+background-color: #0f0f11;
+color: #f1f1f5;
+font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+-webkit-tap-highlight-color: transparent;
+}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #121215; }
+::-webkit-scrollbar-thumb { background: #2a2a32; border-radius: 3px; }
+</style>
+</head>
+<body class="min-h-screen pb-64 select-none">
+​<!-- MAIN CONTAINER -->
+<div class="max-w-md mx-auto px-3 pt-3">
+​<!-- SEARCH & SCANNER BAR -->
+<div class="relative mb-2 flex gap-2">
+<div class="relative flex-grow">
+<div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+</svg>
+</div>
+<input type="text" id="searchInput" oninput="filterProducts()" 
+placeholder="Hledat pivo nebo limonádu..." 
+class="w-full pl-10 pr-4 py-3 bg-[#18181c] border border-[#282830] rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-brand transition text-base">
+</div>
+<!-- SCANNER BUTTON -->
+<button type="button" onclick="openScanner('scan')" class="bg-brand hover:bg-brandDark text-gray-950 font-bold px-3 py-3 rounded-xl flex items-center justify-center gap-1.5 transition shrink-0" title="Naskenovat kód">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m0 14v1m8-8h-1M5 12H4m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+</svg>
+<span class="text-xs font-bold">Skenovat</span>
+</button>
+<!-- MAP EAN BUTTON -->
+<button type="button" onclick="openScanner('learn')" class="bg-[#282830] hover:bg-[#32323d] text-brand border border-brand/30 font-bold px-3 py-3 rounded-xl flex items-center justify-center gap-1.5 transition shrink-0" title="Naučit nový EAN kód">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+</svg>
+<span class="text-xs font-bold">Učit EAN</span>
+</button>
+</div>
+​<!-- ACTION BUTTONS: ARCHIVE, SAVED EANS & SETTINGS -->
+<div class="mb-3 px-1 flex justify-between items-center text-xs">
+<div class="flex gap-2 items-center">
+<button type="button" onclick="toggleCurrency()" class="bg-[#18181c] border border-[#282830] hover:border-brand text-gray-200 font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 transition text-xs">
+<span id="currencyBadge">CZK (Kč)</span>
+<span class="text-brand">⇄</span>
+</button>
+</div>
+<div class="flex items-center gap-3">
+<button type="button" onclick="showArchiveModal()" class="text-brand hover:underline font-semibold text-xs flex items-center gap-1 cursor-pointer">📦 Archiv</button>
+<button type="button" onclick="showSavedEansModal()" class="text-brand hover:underline font-semibold text-xs flex items-center gap-1 cursor-pointer">Správa EAN</button>
+<button type="button" onclick="openRateSettingsModal()" class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-[#282830] transition" title="Nastavení kurzu">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+</svg>
+</button>
+</div>
+</div>
+​<!-- PRODUCTS LIST CONTAINER -->
+<div id="productList" class="space-y-2 mb-4"></div>
+​<!-- RETURNED / TAKEN KEGS & CRATES SECTION -->
+<div class="bg-[#18181c] border border-[#282830] rounded-2xl p-3 mb-6 shadow-md">
+<h3 class="font-bold text-sm text-white mb-2 flex items-center justify-between">
+<span>🔄 Zálohy na obaly a sudy (Vratky / Nákup)</span>
+</h3>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+<div class="bg-[#121215] p-2.5 rounded-xl border border-[#24242c] flex justify-between items-center">
+<div>
+<div class="font-semibold text-gray-200">Vracení Sud Pivo</div>
+<div class="text-[10px] text-emerald-400 font-bold" id="labelBeerKegDep">-1 200 Kč / ks</div>
+</div>
+<div class="flex items-center gap-2">
+<button type="button" onclick="changeReturnedKegs('beer', -1)" class="w-7 h-7 bg-[#24242c] text-white rounded-lg font-bold text-sm flex items-center justify-center">-</button>
+<span id="returnedBeerKegsQty" class="w-5 text-center font-bold text-white text-base">0</span>
+<button type="button" onclick="changeReturnedKegs('beer', 1)" class="w-7 h-7 bg-brand text-gray-950 rounded-lg font-bold text-sm flex items-center justify-center">+</button>
+</div>
+</div>
+<div class="bg-[#121215] p-2.5 rounded-xl border border-[#24242c] flex justify-between items-center">
+<div>
+<div class="font-semibold text-gray-200">Vracení Sud Limo</div>
+<div class="text-[10px] text-emerald-400 font-bold" id="labelLimoKegDep">-1 000 Kč / ks</div>
+</div>
+<div class="flex items-center gap-2">
+<button type="button" onclick="changeReturnedKegs('limo', -1)" class="w-7 h-7 bg-[#24242c] text-white rounded-lg font-bold text-sm flex items-center justify-center">-</button>
+<span id="returnedLimoKegsQty" class="w-5 text-center font-bold text-white text-base">0</span>
+<button type="button" onclick="changeReturnedKegs('limo', 1)" class="w-7 h-7 bg-brand text-gray-950 rounded-lg font-bold text-sm flex items-center justify-center">+</button>
+</div>
+</div>
+<div class="bg-[#121215] p-2.5 rounded-xl border border-[#24242c] flex justify-between items-center">
+<div>
+<div class="font-semibold text-gray-200">Přepravka na pivo</div>
+<div class="text-[10px] text-brand font-bold" id="crateStatusLabel">±150 Kč / ks</div>
+</div>
+<div class="flex items-center gap-2">
+<button type="button" onclick="changeCrates(-1)" class="w-7 h-7 bg-[#24242c] text-white rounded-lg font-bold text-sm flex items-center justify-center">-</button>
+<span id="cratesQty" class="w-6 text-center font-bold text-white text-base">0</span>
+<button type="button" onclick="changeCrates(1)" class="w-7 h-7 bg-brand text-gray-950 rounded-lg font-bold text-sm flex items-center justify-center">+</button>
+</div>
+</div>
+</div>
+</div>
+​</div>
+​<!-- FIXED BOTTOM BAR -->
+<div class="fixed bottom-0 left-0 right-0 bg-[#141417]/95 backdrop-blur-md border-t border-[#282830] p-3 shadow-2xl z-20">
+<div class="max-w-md mx-auto">
+<div class="grid grid-cols-2 gap-2 mb-2">
+<div class="bg-[#18181c] border border-[#282830] rounded-lg p-2 text-center">
+<div class="text-[11px] uppercase tracking-wider text-gray-400">CENA ZA NÁPOJE</div>
+<div class="text-lg font-bold text-brand" id="sumBeverages">0 Kč</div>
+</div>
+<div class="bg-[#18181c] border border-[#282830] rounded-lg p-2 text-center">
+<div class="text-[11px] uppercase tracking-wider text-gray-400">ZÁLOHA / VRATKA</div>
+<div class="text-lg font-bold text-brand" id="sumDeposits">0 Kč</div>
+</div>
+</div>
+<button type="button" onclick="openModal()" class="w-full bg-brand hover:bg-brandDark text-gray-950 font-bold py-3.5 px-4 rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-base">
+Zobrazit a kopírovat objednávku
+</button>
+</div>
+</div>
+​<!-- MODAL NASTAVENÍ KURZU -->
+<div id="rateSettingsModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-3">
+<div class="bg-[#18181c] border border-[#282830] w-full max-w-xs rounded-2xl p-5 shadow-2xl relative flex flex-col">
+<div class="flex justify-between items-center pb-3 border-b border-[#282830]">
+<h3 class="text-base font-bold text-white">Nastavení kurzu</h3>
+<button type="button" onclick="closeRateSettingsModal()" class="text-gray-400 p-1">✕</button>
+</div>
+<div class="my-4 space-y-3">
+<label class="text-xs text-gray-300 block font-medium">Kurz EUR (1 € = X Kč):</label>
+<input type="number" id="eurRateInput" step="0.1" min="1" value="24" class="w-full text-center py-2 bg-[#121215] border border-brand rounded-xl text-xl font-bold text-white focus:outline-none">
+</div>
+<button type="button" onclick="saveEurRate()" class="w-full bg-brand text-gray-950 font-bold py-2.5 rounded-xl text-sm">Uložit kurz</button>
+</div>
+</div>
+​<!-- CAMERA SCANNER MODAL -->
+<div id="scannerModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex flex-col items-center justify-center p-4">
+<div class="bg-[#18181c] border border-[#282830] w-full max-w-md rounded-2xl p-4 shadow-2xl relative flex flex-col items-center">
+<div class="flex justify-between items-center w-full mb-3 pb-2 border-b border-[#282830]">
+<h3 class="text-lg font-bold text-white" id="scannerTitle">Skenování EAN kódu</h3>
+<button type="button" onclick="closeScanner()" class="text-gray-400 p-1">✕</button>
+</div>
+<div id="reader" class="w-full rounded-xl overflow-hidden bg-black min-h-[250px]"></div>
+<button type="button" onclick="closeScanner()" class="mt-4 w-full bg-[#282830] text-white font-medium py-2.5 rounded-xl">Zavřít kameru</button>
+</div>
+</div>
+​<!-- SCAN QTY MODAL -->
+<div id="scanQtyModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-3">
+<div class="bg-[#18181c] border border-[#282830] w-full max-w-md rounded-2xl p-5 shadow-2xl relative flex flex-col">
+<div class="pb-3 border-b border-[#282830] text-center">
+<span class="text-xs font-semibold text-brand uppercase">Naskenovaná položka</span>
+<h3 class="text-lg font-bold text-white mt-1" id="scannedProductName">Pivo</h3>
+<p class="text-xs text-gray-400" id="scannedProductFmt">Format</p>
+</div>
+<div class="my-5 flex flex-col items-center justify-center gap-3">
+<div class="flex items-center gap-3">
+<button type="button" onclick="adjustScanQty(-1)" class="w-12 h-12 bg-[#282830] text-white rounded-xl font-bold text-xl">-</button>
+<input type="number" id="scannedQtyInput" value="1" min="1" class="w-24 text-center py-2 bg-[#121215] border-2 border-brand rounded-xl text-2xl font-bold text-white focus:outline-none">
+<button type="button" onclick="adjustScanQty(1)" class="w-12 h-12 bg-brand text-gray-950 rounded-xl font-bold text-xl">+</button>
+</div>
+</div>
+<div class="flex gap-2 pt-2 border-t border-[#282830]">
+<button type="button" onclick="closeScanQtyModal()" class="w-1/3 bg-[#282830] text-white py-3 rounded-xl text-sm">Zrušit</button>
+<button type="button" onclick="confirmScannedQty()" class="w-2/3 bg-brand text-gray-950 font-bold py-3 rounded-xl text-sm">Přidat do objednávky</button>
+</div>
+</div>
+</div>
+​<!-- PAIRING MODAL -->
+<div id="pairModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-3">
+<div class="bg-[#18181c] border border-[#282830] w-full max-w-md rounded-2xl p-4 shadow-2xl relative max-h-[90vh] flex flex-col">
+<div class="pb-3 border-b border-[#282830]">
+<h3 class="text-base font-bold text-white">Spárovat naskenovaný EAN</h3>
+<p class="text-xs text-brand font-mono mt-1" id="scannedCodeDisplay">EAN: -</p>
+</div>
+<div id="pairProductList" class="overflow-y-auto space-y-2 flex-grow pr-1 text-sm my-2"></div>
+<button type="button" onclick="closePairModal()" class="w-full bg-[#282830] text-white py-2 rounded-xl text-sm">Zrušit</button>
+</div>
+</div>
+​<!-- SAVED EAN LIST MODAL -->
+<div id="savedEansModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-3">
+<div class="bg-[#18181c] border border-[#282830] w-full max-w-md rounded-2xl p-4 shadow-2xl relative max-h-[85vh] flex flex-col">
+<div class="flex justify-between items-center pb-3 border-b border-[#282830]">
+<h3 class="text-base font-bold text-white">Uložené EAN kódy</h3>
+<button type="button" onclick="closeSavedEansModal()" class="text-gray-400 p-1">✕</button>
+</div>
+<div id="savedEansList" class="overflow-y-auto my-3 space-y-3 flex-grow text-xs"></div>
+<button type="button" onclick="closeSavedEansModal()" class="w-full bg-[#282830] text-white py-2 rounded-xl text-xs">Zavřít</button>
+</div>
+</div>
+​<!-- BARCODE ZOOM MODAL -->
+<div id="barcodeZoomModal" onclick="closeBarcodeZoomModal()" class="fixed inset-0 bg-black/95 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+<div onclick="event.stopPropagation()" class="bg-[#18181c] border border-[#282830] w-full max-w-md rounded-2xl p-6 shadow-2xl relative flex flex-col items-center text-center">
+<h3 class="text-base font-bold text-white mb-1" id="zoomProductName">Název produktu</h3>
+<p class="text-xs text-brand font-mono mb-4" id="zoomEanCode">EAN: -</p>
+<div class="bg-white p-4 rounded-xl w-full flex items-center justify-center border-2 border-white">
+<svg id="zoomedBarcodeSvg" class="w-full h-36"></svg>
+</div>
+<button type="button" onclick="closeBarcodeZoomModal()" class="mt-4 w-full bg-[#282830] text-white py-2.5 rounded-xl text-xs">Zavřít</button>
+</div>
+</div>
+​<!-- ARCHIVE MODAL -->
+<div id="archiveModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-3">
+<div class="bg-[#18181c] border border-[#282830] w-full max-w-lg rounded-2xl p-4 shadow-2xl relative max-h-[85vh] flex flex-col">
+<div class="flex justify-between items-center pb-3 border-b border-[#282830]">
+<h3 class="text-base font-bold text-white">📦 Archiv zaplacených objednávek</h3>
+<div class="flex items-center gap-2">
+<button type="button" onclick="printSelectedOrders()" class="bg-brand text-gray-950 font-bold px-3 py-1.5 rounded-lg text-xs">Tisk / PDF</button>
+<button type="button" onclick="closeArchiveModal()" class="text-gray-400 p-1">✕</button>
+</div>
+</div>
+<div class="flex justify-between items-center px-1 py-2 text-xs text-gray-400 border-b border-[#282830] my-1">
+<label class="flex items-center gap-2 cursor-pointer select-none">
+<input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAllArchive(this)" class="w-4 h-4 accent-brand rounded">
+<span>Vybrat všechny</span>
+</label>
+<span id="selectedCountLabel" class="font-bold text-brand">Vybráno: 0</span>
+</div>
+<div id="archiveList" class="overflow-y-auto my-2 space-y-3 flex-grow text-xs pr-1"></div>
+<div class="pt-2 border-t border-[#282830] flex justify-between gap-2">
+<button type="button" onclick="clearArchive()" class="text-xs text-red-400 font-semibold px-2 py-1">Vymazat archiv</button>
+<button type="button" onclick="closeArchiveModal()" class="bg-[#282830] text-white px-4 py-2 rounded-xl text-xs">Zavřít</button>
+</div>
+</div>
+</div>
+​<!-- ORDER DETAIL MODAL -->
+<div id="orderModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
+<div class="bg-[#18181c] border border-[#282830] w-full max-w-md rounded-2xl p-5 shadow-2xl relative max-h-[90vh] flex flex-col">
+<div class="flex justify-between items-center pb-3 border-b border-[#282830]">
+<h3 class="text-lg font-bold text-white">Detail Objednávky</h3>
+<button type="button" onclick="closeModal()" class="text-gray-400 p-1">✕</button>
+</div>
+<div id="modalOrderItems" class="py-4 overflow-y-auto space-y-3 flex-grow text-sm"></div>
+<div class="pt-3 border-t border-[#282830] space-y-2">
+<button type="button" onclick="markAsPaid()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-extrabold py-4 px-4 rounded-xl shadow-xl transition text-lg">
+ZAPLACENO (Uložit objednávku)
+</button>
+<div class="flex justify-between items-center pt-1 px-1">
+<button type="button" onclick="resetAllOrders()" class="bg-red-500/10 text-red-400 py-2 px-3 rounded-lg text-xs">Vynulovat</button>
+<div class="flex gap-1.5">
+<button type="button" onclick="sendToWhatsApp()" class="bg-[#282830] text-emerald-400 py-2 px-2.5 rounded-lg text-xs">WhatsApp</button>
+<button type="button" onclick="copyOrderText()" class="bg-[#282830] text-gray-300 py-2 px-2.5 rounded-lg text-xs">Kopírovat</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+​<!-- TOAST -->
+<div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-brand text-gray-950 px-4 py-2 rounded-xl font-bold shadow-2xl opacity-0 transition-opacity duration-300 pointer-events-none z-50 text-sm text-center">OK</div>
+​<script>
+const DEPOSIT_BEER = 1200;
+const DEPOSIT_LIMO = 1000;
+const DEPOSIT_CRATE = 150;
+const KEG_KEYS = ['k50', 'k30', 'k15'];
+​let returnedBeerKegs = 0;
+let returnedLimoKegs = 0;
+let cratesQty = 0;
+let openAccordions = {};
+let currentCurrency = 'CZK';
+let eurRate = 24.0;
+​// BEZPEČNÁ PAMĚŤ S VNITŘNÍ ZÁLOHOU (ZABRAŇUJE PÁDU NA WEBU)
+let memoryFallbackStorage = {};
+function safeStorageGet(key) {
+try {
+if (window.localStorage) {
+return localStorage.getItem(key);
+}
+} catch(e) {}
+return memoryFallbackStorage[key] || null;
+}
+function safeStorageSet(key, value) {
+try {
+if (window.localStorage) {
+localStorage.setItem(key, value);
+return;
+}
+} catch(e) {}
+memoryFallbackStorage[key] = value;
+}
+function safeStorageRemove(key) {
+try {
+if (window.localStorage) {
+localStorage.removeItem(key);
+}
+} catch(e) {}
+delete memoryFallbackStorage[key];
+}
+​function loadEurRate() {
+const savedRate = safeStorageGet('RUDOHOR_EUR_RATE');
+if (savedRate) eurRate = parseFloat(savedRate) || 24.0;
+}
+function saveEurRate() {
+const val = parseFloat(document.getElementById('eurRateInput').value);
+if (val && val > 0) {
+eurRate = val;
+safeStorageSet('RUDOHOR_EUR_RATE', String(eurRate));
+showToast('Kurz uložen');
+closeRateSettingsModal();
+calculateTotals();
+renderProducts();
+}
+}
+function openRateSettingsModal() { document.getElementById('eurRateInput').value = eurRate; document.getElementById('rateSettingsModal').classList.remove('hidden'); }
+function closeRateSettingsModal() { document.getElementById('rateSettingsModal').classList.add('hidden'); }
+​function toggleCurrency() {
+currentCurrency = currentCurrency === 'CZK' ? 'EUR' : 'CZK';
+document.getElementById('currencyBadge').innerText = currentCurrency === 'CZK' ? 'CZK (Kč)' : 'EUR (€)';
+calculateTotals();
+renderProducts();
+}
+​function formatPrice(amt) {
+if (currentCurrency === 'EUR') {
+return ${(amt / eurRate).toLocaleString('cs-CZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €;
+}
+return ${amt.toLocaleString('cs-CZ')} Kč;
+}
+​const FORMAT_NAMES = { k50: '50 l KEG', k30: '30 l KEG', k15: '15 l KEG', p15: '1,5 l PET', p10: '1,0 l PET', s075: '0,75 l SKLO', s05: '0,5 l SKLO' };
+​const PRODUCTS = [
+{ id: 'petnik_nealko', name: 'Rudohor PĚTNÍK Nealko Pivo', type: 'beer', prices: { k50: 2429, k30: 1509, p10: 65, s05: 50 } },
+{ id: 'gros_10', name: 'Rudohor GROŠ 10° Světlé výčepní', type: 'beer', prices: { k50: 2429, k30: 1509, p15: 90, p10: 65, s075: 75, s05: 50 } },
+{ id: 'tolar_11', name: 'Rudohor TOLAR 11° Světlý ležák', type: 'beer', prices: { k50: 2724, k30: 1669, k15: 883, p15: 98, p10: 70, s075: 80, s05: 52 } },
+{ id: 'dukat_12', name: 'Rudohor DUKÁT 12° Premium ležák', type: 'beer', prices: { k50: 3141, k30: 1938, k15: 1031, p15: 111, p10: 77, s075: 88, s05: 58 } },
+{ id: 'gresle_13', name: 'Rudohor GREŠLE 13° Polotmavý ležák', type: 'beer', prices: { k50: 3202, k30: 1975, k15: 1043, p15: 113, p10: 80, s075: 92, s05: 60 } },
+{ id: 'dollar_12', name: 'Rudohor DOLLAR 12° American Pale Ale', type: 'beer', prices: { k50: 3482, k30: 2135, k15: 1153, p15: 128, p10: 90, s075: 96, s05: 67 } },
+{ id: 'rupya_14', name: 'Rudohor RŪPYA 14° India Pale Ale', type: 'beer', prices: { k50: 3914, k30: 2380, k15: 1313, p15: 146, p10: 106, s075: 107, s05: 80 } },
+{ id: 'limo_rudohorka', name: 'Limonáda Rudohorka', type: 'limo', prices: { k50: 1297, p10: 60 } }
+];
+​let state = {};
+PRODUCTS.forEach(p => { state[p.id] = {}; Object.keys(p.prices).forEach(f => state[p.id][f] = 0); });
+let EAN_MAP = {};
+​function loadEans() {
+const saved = safeStorageGet('RUDOHOR_EAN_MAP');
+if (saved) { try { EAN_MAP = JSON.parse(saved) || {}; } catch(e) { EAN_MAP = {}; } }
+}
+function saveEans() { safeStorageSet('RUDOHOR_EAN_MAP', JSON.stringify(EAN_MAP)); }
+​function toggleAccordion(id) {
+openAccordions[id] = !openAccordions[id];
+renderProducts(document.getElementById('searchInput').value);
+}
+​function renderProducts(filterText = '') {
+const container = document.getElementById('productList');
+if (!container) return;
+container.innerHTML = '';
+const search = (filterText || '').toLowerCase().trim();
+PRODUCTS.forEach(p => {
+if (search && !p.name.toLowerCase().includes(search)) return;
+let total = 0;
+Object.keys(p.prices).forEach(f => total += (state[p.id][f] || 0));
+const isOpen = search.length > 0 ? true : !!openAccordions[p.id];
+const card = document.createElement('div');
+card.className = 'bg-[#18181c] border border-[#282830] rounded-xl overflow-hidden shadow-md';
+let formats = '';
+Object.keys(p.prices).forEach(f => {
+formats += <div class="bg-[#121215] p-2.5 rounded-xl border border-[#24242c] flex justify-between items-center text-xs"><div><span class="text-gray-200">${FORMAT_NAMES[f]||f}</span> <span class="text-brand font-bold">${formatPrice(p.prices[f])}</span></div><div class="flex items-center gap-1"><button type="button" onclick="changeQty('${p.id}', '${f}', -1)" class="w-8 h-8 bg-[#24242c] text-white rounded">-</button><span class="w-6 text-center text-white">${state[p.id][f]||0}</span><button type="button" onclick="changeQty('${p.id}', '${f}', 1)" class="w-8 h-8 bg-brand text-gray-950 rounded">+</button></div></div>;
+});
+card.innerHTML = <button type="button" onclick="toggleAccordion('${p.id}')" class="w-full p-3.5 flex justify-between items-center text-left bg-[#18181c]"><span class="font-bold text-sm text-white">${p.name}</span><span class="text-brand font-bold">${total > 0 ? total + ' ks' : ''}</span></button><div class="${isOpen ? 'block' : 'hidden'} px-3 pb-3 pt-1 bg-[#141417]"><div class="grid grid-cols-1 gap-2">${formats}</div></div>;
+container.appendChild(card);
+});
+}
+​function changeQty(pId, fKey, delta) {
+if (!state[pId]) state[pId] = {};
+state[pId][fKey] = Math.max(0, (state[pId][fKey] || 0) + delta);
+calculateTotals();
+renderProducts(document.getElementById('searchInput').value);
+}
+​function changeReturnedKegs(type, delta) {
+if (type === 'beer') returnedBeerKegs = Math.max(0, returnedBeerKegs + delta);
+if (type === 'limo') returnedLimoKegs = Math.max(0, returnedLimoKegs + delta);
+document.getElementById('returnedBeerKegsQty').innerText = returnedBeerKegs;
+document.getElementById('returnedLimoKegsQty').innerText = returnedLimoKegs;
+calculateTotals();
+}
+​function changeCrates(delta) {
+cratesQty += delta;
+document.getElementById('cratesQty').innerText = cratesQty;
+calculateTotals();
+}
+​function calculateTotals() {
+let bev = 0, dep = 0;
+PRODUCTS.forEach(p => {
+Object.keys(p.prices).forEach(f => {
+const q = state[p.id][f] || 0;
+if (q > 0) {
+bev += q * p.prices[f];
+if (KEG_KEYS.includes(f)) dep += q * (p.type === 'limo' ? DEPOSIT_LIMO : DEPOSIT_BEER);
+}
+});
+});
+dep -= (returnedBeerKegs * DEPOSIT_BEER) + (returnedLimoKegs * DEPOSIT_LIMO);
+dep += (cratesQty * DEPOSIT_CRATE);
+document.getElementById('sumBeverages').innerText = formatPrice(bev);
+document.getElementById('sumDeposits').innerText = formatPrice(dep);
+}
+​function filterProducts() { renderProducts(document.getElementById('searchInput').value); }
+​function getArchive() {
+const saved = safeStorageGet('RUDOHOR_ORDER_ARCHIVE');
+if (!saved) return [];
+try { return JSON.parse(saved) || []; } catch(e) { return []; }
+}
+function saveArchive(arc) {
+safeStorageSet('RUDOHOR_ORDER_ARCHIVE', JSON.stringify(arc));
+}
+​function markAsPaid() {
+let items = [];
+let bev = 0, dep = 0;
+PRODUCTS.forEach(p => {
+Object.keys(p.prices).forEach(f => {
+const q = state[p.id][f] || 0;
+if (q > 0) {
+const price = q * p.prices[f];
+bev += price;
+items.push({ name: p.name, fmt: FORMAT_NAMES[f]||f, qty: q, priceCzk: price });
+}
+});
+});
+if (items.length === 0) { alert('Košík je prázdný!'); return; }
+const arc = getArchive();
+arc.unshift({ id: Date.now(), date: new Date().toLocaleString('cs-CZ'), items, grandTotalCzk: bev + dep });
+saveArchive(arc);
+showToast('Uloženo do archivu');
+resetAllOrders();
+}
+​function showArchiveModal() {
+const listEl = document.getElementById('archiveList');
+if (!listEl) return;
+const archive = getArchive();
+listEl.innerHTML = '';
+if (archive.length === 0) {
+listEl.innerHTML = '<p class="text-gray-500 text-center py-6">Žádné zaplacené objednávky v archivu.</p>';
+} else {
+archive.forEach(ord => {
+const card = document.createElement('div');
+card.className = 'bg-[#121215] p-3 rounded-xl border border-[#282830] text-xs space-y-1';
+card.innerHTML = <div class="flex justify-between font-bold text-brand"><span>📅 ${ord.date}</span><span>Celkem: ${formatPrice(ord.grandTotalCzk)}</span></div>;
+listEl.appendChild(card);
+});
+}
+document.getElementById('archiveModal').classList.remove('hidden');
+}
+function closeArchiveModal() { document.getElementById('archiveModal').classList.add('hidden'); }
+function clearArchive() { if (confirm('Vymazat archiv?')) { safeStorageRemove('RUDOHOR_ORDER_ARCHIVE'); showArchiveModal(); } }
+​function showSavedEansModal() { document.getElementById('savedEansModal').classList.remove('hidden'); }
+function closeSavedEansModal() { document.getElementById('savedEansModal').classList.add('hidden'); }
+function openModal() { document.getElementById('orderModal').classList.remove('hidden'); }
+function closeModal() { document.getElementById('orderModal').classList.add('hidden'); }
+​function resetAllOrders() {
+PRODUCTS.forEach(p => Object.keys(p.prices).forEach(f => state[p.id][f] = 0));
+returnedBeerKegs = 0; returnedLimoKegs = 0; cratesQty = 0;
+document.getElementById('returnedBeerKegsQty').innerText = '0';
+document.getElementById('returnedLimoKegsQty').innerText = '0';
+document.getElementById('cratesQty').innerText = '0';
+calculateTotals();
+renderProducts();
+closeModal();
+}
+​function showToast(msg) {
+const t = document.getElementById('toast');
+if (!t) return;
+t.innerText = msg;
+t.classList.remove('opacity-0');
+setTimeout(() => t.classList.add('opacity-0'), 2000);
+}
+​// Spuštění
+loadEurRate();
+loadEans();
+renderProducts();
+calculateTotals();
+</script>
+</body>
+</html>
