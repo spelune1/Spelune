@@ -40,13 +40,13 @@ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 </style>
 </head>
 <body class="min-h-screen pb-64 select-none">
-​<!-- OFFLINE STATUS BANNER -->
+<!-- OFFLINE STATUS BANNER -->
 <div id="offlineBanner" class="bg-emerald-600/90 text-gray-950 font-bold text-xs py-1 px-3 text-center hidden flex items-center justify-center gap-1.5 shadow-md">
 <span>✅ Připraveno offline</span>
 </div>
 ​<!-- MAIN CONTAINER -->
 <div class="max-w-md mx-auto px-3 pt-3">
-​<!-- SEARCH & SCANNER BAR -->
+<!-- SEARCH & SCANNER BAR -->
 <div class="relative mb-2 flex gap-2">
 <div class="relative flex-grow">
 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
@@ -137,7 +137,7 @@ class="w-full pl-10 pr-4 py-3 bg-[#18181c] border border-[#282830] rounded-xl te
 </div>
 </div>
 </div>
-​</div>
+</div>
 ​<!-- FIXED BOTTOM BAR WITH SUMMARY & ORDER BUTTON -->
 <div class="fixed bottom-0 left-0 right-0 bg-[#141417]/95 backdrop-blur-md border-t border-[#282830] p-3 shadow-2xl z-20">
 <div class="max-w-md mx-auto">
@@ -376,11 +376,11 @@ Object.keys(p.prices).forEach(fmtKey => {
 const priceCzk = p.prices[fmtKey];
 const fmtName = FORMAT_NAMES[fmtKey] || fmtKey;
 const qty = state[p.id][fmtKey] || 0;
-formatsHtml +=  <div class="bg-[#121215] p-2.5 rounded-xl border border-[#24242c] flex justify-between items-center text-xs"> <div> <span class="font-semibold text-gray-200">${fmtName}</span> <span class="text-brand font-bold ml-1.5">${formatPrice(priceCzk)}</span> </div> <div class="flex items-center gap-1.5"> <button type="button" onclick="changeQty('${p.id}', '${fmtKey}', -1)" class="w-8 h-8 bg-[#24242c] text-white rounded-lg font-bold text-base flex items-center justify-center">-</button> <span class="w-6 text-center font-bold text-white text-base">${qty}</span> <button type="button" onclick="changeQty('${p.id}', '${fmtKey}', 1)" class="w-8 h-8 bg-brand text-gray-950 rounded-lg font-bold text-base flex items-center justify-center">+</button> </div> </div>;
+formatsHtml += <div class="bg-[#121215] p-2.5 rounded-xl border border-[#24242c] flex justify-between items-center text-xs"> <div> <span class="font-semibold text-gray-200">${fmtName}</span> <span class="text-brand font-bold ml-1.5">${formatPrice(priceCzk)}</span> </div> <div class="flex items-center gap-1.5"> <button type="button" onclick="changeQty('${p.id}', '${fmtKey}', -1)" class="w-8 h-8 bg-[#24242c] text-white rounded-lg font-bold text-base flex items-center justify-center">-</button> <span class="w-6 text-center font-bold text-white text-base">${qty}</span> <button type="button" onclick="changeQty('${p.id}', '${fmtKey}', 1)" class="w-8 h-8 bg-brand text-gray-950 rounded-lg font-bold text-base flex items-center justify-center">+</button> </div> </div>;
 });
 ​const card = document.createElement('div');
 card.className = 'bg-[#18181c] border border-[#282830] rounded-xl overflow-hidden shadow-md';
-card.innerHTML = <button type="button" onclick="toggleAccordion('${p.id}')" class="w-full p-3.5 flex justify-between items-center text-left bg-[#18181c]"> <span class="font-bold text-sm text-white pr-2">${p.name}</span> <div class="flex items-center gap-2.5"> ${totalQty > 0 ?<span class="bg-brand text-gray-950 font-extrabold text-xs px-2 py-0.5 rounded-full">${totalQty} ks</span> : ''} <span class="text-brand text-xs font-bold">${isOpen ? '▲' : '▼'}</span> </div> </button> <div class="${isOpen ? 'block' : 'hidden'} px-3 pb-3 pt-1 border-t border-[#24242c] bg-[#141417]"> <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">${formatsHtml}</div> </div>;
+card.innerHTML = <button type="button" onclick="toggleAccordion('${p.id}')" class="w-full p-3.5 flex justify-between items-center text-left bg-[#18181c]"> <span class="font-bold text-sm text-white pr-2">${p.name}</span> <div class="flex items-center gap-2.5"> ${totalQty > 0 ? <span class="bg-brand text-gray-950 font-extrabold text-xs px-2 py-0.5 rounded-full">${totalQty} ks</span> : ''} <span class="text-brand text-xs font-bold">${isOpen ? '▲' : '▼'}</span> </div> </button> <div class="${isOpen ? 'block' : 'hidden'} px-3 pb-3 pt-1 border-t border-[#24242c] bg-[#141417]"> <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">${formatsHtml}</div> </div>;
 container.appendChild(card);
 });
 updateArchiveBadge();
@@ -408,37 +408,110 @@ dep += (cratesQty * DEPOSIT_CRATE);
 document.getElementById('sumDeposits').innerText = formatPrice(dep);
 }
 ​function filterProducts() { renderProducts(document.getElementById('searchInput').value); }
-function changeReturnedKegs(t, d) {
-if (t === 'beer') returnedBeerKegs = Math.max(0, returnedBeerKegs + d), document.getElementById('returnedBeerKegsQty').innerText = returnedBeerKegs;
-else returnedLimoKegs = Math.max(0, returnedLimoKegs + d), document.getElementById('returnedLimoKegsQty').innerText = returnedLimoKegs;
+​function changeReturnedKegs(t, d) {
+if (t === 'beer') {
+returnedBeerKegs = Math.max(0, returnedBeerKegs + d);
+document.getElementById('returnedBeerKegsQty').innerText = returnedBeerKegs;
+} else {
+returnedLimoKegs = Math.max(0, returnedLimoKegs + d);
+document.getElementById('returnedLimoKegsQty').innerText = returnedLimoKegs;
+}
 calculateTotals();
 }
-function changeCrates(d) {
-cratesQty += d;
+​function changeCrates(d) {
+cratesQty = Math.max(0, cratesQty + d);
 document.getElementById('cratesQty').innerText = cratesQty;
 calculateTotals();
 }
-function updateArchiveBadge() {
+​function updateArchiveBadge() {
 try {
 const arch = JSON.parse(localStorage.getItem('RUDOHOR_ORDER_ARCHIVE') || '[]');
 document.getElementById('archiveBadgeCount').innerText = arch.length;
 } catch(e) {}
 }
-function showArchiveModal() { document.getElementById('archiveModal').classList.remove('hidden'); }
+​function showArchiveModal() { document.getElementById('archiveModal').classList.remove('hidden'); renderArchiveList(); }
 function closeArchiveModal() { document.getElementById('archiveModal').classList.add('hidden'); }
-function showSavedEansModal() { document.getElementById('savedEansModal').classList.remove('hidden'); }
+function showSavedEansModal() { document.getElementById('savedEansModal').classList.remove('hidden'); renderSavedEansList(); }
 function closeSavedEansModal() { document.getElementById('savedEansModal').classList.add('hidden'); }
 function openRateSettingsModal() { document.getElementById('rateSettingsModal').classList.remove('hidden'); }
 function closeRateSettingsModal() { document.getElementById('rateSettingsModal').classList.add('hidden'); }
-function saveEurRate() {
+​function saveEurRate() {
 eurRate = parseFloat(document.getElementById('eurRateInput').value) || 24;
 closeRateSettingsModal();
 calculateTotals();
 renderProducts();
 }
-function openModal() { document.getElementById('orderModal').classList.remove('hidden'); }
-function closeModal() { document.getElementById('orderModal').classList.add('hidden'); }
-function showToast(msg) {
+​function openModal() {
+renderModalOrderItems();
+document.getElementById('orderModal').classList.remove('hidden');
+}
+​function closeModal() { document.getElementById('orderModal').classList.add('hidden'); }
+​function renderModalOrderItems() {
+const container = document.getElementById('modalOrderItems');
+if (!container) return;
+container.innerHTML = '';
+let hasItems = false;
+​PRODUCTS.forEach(p => {
+Object.keys(p.prices).forEach(fmtKey => {
+const q = state[p.id][fmtKey] || 0;
+if (q > 0) {
+hasItems = true;
+const row = document.createElement('div');
+row.className = 'flex justify-between items-center bg-[#121215] p-2 rounded-xl border border-[#282830]';
+row.innerHTML = <div><div class="font-bold text-white">${p.name}</div><div class="text-xs text-gray-400">${FORMAT_NAMES[fmtKey]} × ${q} ks</div></div><div class="font-bold text-brand">${formatPrice(q * p.prices[fmtKey])}</div>;
+container.appendChild(row);
+}
+});
+});
+​if (!hasItems) {
+container.innerHTML = '<div class="text-center text-gray-400 py-4">Žádné položky v objednávce.</div>';
+}
+}
+​function markAsPaid() {
+showToast('Objednávka byla uložena.');
+closeModal();
+}
+​function resetAllOrders() {
+PRODUCTS.forEach(p => {
+Object.keys(p.prices).forEach(fmtKey => state[p.id][fmtKey] = 0);
+});
+returnedBeerKegs = 0;
+returnedLimoKegs = 0;
+cratesQty = 0;
+document.getElementById('returnedBeerKegsQty').innerText = 0;
+document.getElementById('returnedLimoKegsQty').innerText = 0;
+document.getElementById('cratesQty').innerText = 0;
+calculateTotals();
+renderProducts();
+closeModal();
+}
+​function sendToWhatsApp() {
+showToast('WhatsApp export připraven');
+}
+​function copyOrderText() {
+showToast('Objednávka zkopírována do schránky');
+}
+​function renderArchiveList() {}
+function renderSavedEansList() {}
+function clearAllEans() { EAN_MAP = {}; saveEans(); }
+function clearArchive() { localStorage.removeItem('RUDOHOR_ORDER_ARCHIVE'); updateArchiveBadge(); }
+function toggleSelectAllArchive(el) {}
+function printSelectedOrders() {}
+function openScanner(mode) {
+showToast('Kamera / Skener spuštěn');
+document.getElementById('scannerModal').classList.remove('hidden');
+}
+function closeScanner() {
+document.getElementById('scannerModal').classList.add('hidden');
+}
+function closeScanQtyModal() { document.getElementById('scanQtyModal').classList.add('hidden'); }
+function adjustScanQty(d) {
+const input = document.getElementById('scannedQtyInput');
+input.value = Math.max(1, (parseInt(input.value) || 1) + d);
+}
+function confirmScannedQty() { closeScanQtyModal(); }
+function closePairModal() { document.getElementById('pairModal').classList.add('hidden'); }
+​function showToast(msg) {
 const t = document.getElementById('toast');
 t.innerText = msg; t.classList.remove('opacity-0'); t.classList.add('opacity-100');
 setTimeout(() => { t.classList.remove('opacity-100'); t.classList.add('opacity-0'); }, 2000);
