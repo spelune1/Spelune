@@ -1,0 +1,1984 @@
+
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pivovar Rudohor - Objednávková kalkulačka (Offline Ready)</title>
+    <style>
+        /* VLASTNÍ KOMPLETNÍ CSS SYSTÉM (NÁHRADA ZA EXTERNÍ TAILWIND PRO 100% OFFLINE A FILE:/// BĚH) */
+        :root {
+            --brand: #ff9800;
+            --brand-dark: #e68a00;
+            --dark-bg: #0f0f11;
+            --card-bg: #18181c;
+            --card-border: #282830;
+            --inner-bg: #121215;
+            --btn-bg: #24242c;
+            --btn-hover: #32323d;
+            --emerald: #10b981;
+            --emerald-light: #34d399;
+            --red: #ef4444;
+            --red-light: #f87171;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: #f1f1f5;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            padding-bottom: 16rem;
+            user-select: none;
+            line-height: 1.4;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #121215; }
+        ::-webkit-scrollbar-thumb { background: #2a2a32; border-radius: 3px; }
+
+        /* Layout & Spacing */
+        .container { max-width: 28rem; margin: 0 auto; padding: 0.75rem 0.75rem 0; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .flex-grow { flex-grow: 1; }
+        .flex-wrap { flex-wrap: wrap; }
+        .items-center { align-items: center; }
+        .items-start { align-items: flex-start; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .justify-end { justify-content: flex-end; }
+        .shrink-0 { flex-shrink: 0; }
+        .grid { display: grid; }
+        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .gap-1 { gap: 0.25rem; }
+        .gap-1-5 { gap: 0.375rem; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-2-5 { gap: 0.625rem; }
+        .gap-3 { gap: 0.75rem; }
+        .space-y-0-5 > * + * { margin-top: 0.125rem; }
+        .space-y-1-5 > * + * { margin-top: 0.375rem; }
+        .space-y-2 > * + * { margin-top: 0.5rem; }
+        .space-y-3 > * + * { margin-top: 0.75rem; }
+
+        @media (min-width: 640px) {
+            .sm-grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .sm-grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .sm-flex-row { flex-direction: row; }
+            .sm-items-center { align-items: center; }
+        }
+
+        /* Positioning */
+        .relative { position: relative; }
+        .absolute { position: absolute; }
+        .fixed { position: fixed; }
+        .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+        .inset-y-0 { top: 0; bottom: 0; }
+        .left-0 { left: 0; }
+        .right-0 { right: 0; }
+        .bottom-0 { bottom: 0; }
+        .top-3 { top: 0.75rem; }
+        .right-3 { right: 0.75rem; }
+        .top-5 { top: 1.25rem; }
+        .left-1-2 { left: 50%; }
+        .-translate-x-1-2 { transform: translateX(-50%); }
+        .z-20 { z-index: 20; }
+        .z-50 { z-index: 50; }
+        .hidden { display: none !important; }
+        .block { display: block; }
+        .pointer-events-none { pointer-events: none; }
+        .overflow-hidden { overflow: hidden; }
+        .overflow-y-auto { overflow-y: auto; }
+
+        /* Sizing */
+        .w-full { width: 100%; }
+        .w-1-3 { width: 33.3333%; }
+        .w-2-3 { width: 66.6667%; }
+        .w-3-5 { width: 0.875rem; }
+        .h-3-5 { height: 0.875rem; }
+        .w-4 { width: 1rem; }
+        .h-4 { height: 1rem; }
+        .w-5 { width: 1.25rem; }
+        .h-5 { height: 1.25rem; }
+        .w-6 { width: 1.5rem; }
+        .h-6 { height: 1.5rem; }
+        .w-7 { width: 1.75rem; }
+        .h-7 { height: 1.75rem; }
+        .w-8 { width: 2rem; }
+        .h-8 { height: 2rem; }
+        .w-12 { width: 3rem; }
+        .h-12 { height: 3rem; }
+        .w-24 { width: 6rem; }
+        .h-16 { height: 4rem; }
+        .h-36 { height: 9rem; }
+        .min-h-250 { min-height: 250px; }
+        .max-w-xs { max-width: 20rem; }
+        .max-w-md { max-width: 28rem; }
+        .max-w-lg { max-width: 32rem; }
+        .max-h-85vh { max-height: 85vh; }
+        .max-h-88vh { max-height: 88vh; }
+        .max-h-90vh { max-height: 90vh; }
+
+        /* Padding & Margin */
+        .p-1 { padding: 0.25rem; }
+        .p-1-5 { padding: 0.375rem; }
+        .p-2 { padding: 0.5rem; }
+        .p-2-5 { padding: 0.625rem; }
+        .p-3 { padding: 0.75rem; }
+        .p-3-5 { padding: 0.875rem; }
+        .p-4 { padding: 1rem; }
+        .p-5 { padding: 1.25rem; }
+        .p-6 { padding: 1.5rem; }
+        .px-1 { padding-left: 0.25rem; padding-right: 0.25rem; }
+        .px-1-5 { padding-left: 0.375rem; padding-right: 0.375rem; }
+        .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+        .px-2-5 { padding-left: 0.625rem; padding-right: 0.625rem; }
+        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .py-0-5 { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+        .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+        .py-1-5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .py-2-5 { padding-top: 0.625rem; padding-bottom: 0.625rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .py-3-5 { padding-top: 0.875rem; padding-bottom: 0.875rem; }
+        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+        .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+        .pl-3-5 { padding-left: 0.875rem; }
+        .pl-10 { padding-left: 2.5rem; }
+        .pr-1 { padding-right: 0.25rem; }
+        .pr-2 { padding-right: 0.5rem; }
+        .pr-4 { padding-right: 1rem; }
+        .pt-1 { padding-top: 0.25rem; }
+        .pt-2 { padding-top: 0.5rem; }
+        .pt-3 { padding-top: 0.75rem; }
+        .pb-1-5 { padding-bottom: 0.375rem; }
+        .pb-2 { padding-bottom: 0.5rem; }
+        .pb-3 { padding-bottom: 0.75rem; }
+        .mt-1 { margin-top: 0.25rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-3 { margin-top: 0.75rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mb-1 { margin-bottom: 0.25rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .my-1 { margin-top: 0.25rem; margin-bottom: 0.25rem; }
+        .my-2 { margin-top: 0.5rem; margin-bottom: 0.5rem; }
+        .my-3 { margin-top: 0.75rem; margin-bottom: 0.75rem; }
+        .my-4 { margin-top: 1rem; margin-bottom: 1rem; }
+        .my-5 { margin-top: 1.25rem; margin-bottom: 1.25rem; }
+        .ml-1-5 { margin-left: 0.375rem; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+
+        /* Typography */
+        .text-left { text-align: left; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .text-10 { font-size: 0.625rem; }
+        .text-11 { font-size: 0.6875rem; }
+        .text-xs { font-size: 0.75rem; }
+        .text-sm { font-size: 0.875rem; }
+        .text-base { font-size: 1rem; }
+        .text-lg { font-size: 1.125rem; }
+        .text-xl { font-size: 1.25rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+        .font-extrabold { font-weight: 800; }
+        .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+        .uppercase { text-transform: uppercase; }
+        .tracking-wider { letter-spacing: 0.05em; }
+        .italic { font-style: italic; }
+
+        /* Colors & Backgrounds */
+        .bg-dark { background-color: var(--dark-bg); }
+        .bg-card { background-color: var(--card-bg); }
+        .bg-inner { background-color: var(--inner-bg); }
+        .bg-btn { background-color: var(--btn-bg); }
+        .bg-btn-alt { background-color: #282830; }
+        .bg-brand { background-color: var(--brand); }
+        .bg-emerald { background-color: var(--emerald); }
+        .bg-emerald-dim { background-color: rgba(16, 185, 129, 0.1); }
+        .bg-red-dim { background-color: rgba(239, 68, 68, 0.1); }
+        .bg-brand-dim { background-color: rgba(255, 152, 0, 0.15); }
+        .bg-white { background-color: #ffffff; }
+        .bg-black { background-color: #000000; }
+        .bg-bottom-bar { background-color: rgba(20, 20, 23, 0.96); backdrop-filter: blur(12px); }
+        .bg-modal-backdrop { background-color: rgba(0, 0, 0, 0.88); backdrop-filter: blur(8px); }
+
+        .text-white { color: #ffffff; }
+        .text-gray-200 { color: #e5e7eb; }
+        .text-gray-300 { color: #d1d5db; }
+        .text-gray-400 { color: #9ca3af; }
+        .text-gray-500 { color: #6b7280; }
+        .text-gray-950 { color: #030712; }
+        .text-brand { color: var(--brand); }
+        .text-emerald { color: var(--emerald-light); }
+        .text-red { color: var(--red-light); }
+
+        /* Borders & Radius */
+        .border { border: 1px solid var(--card-border); }
+        .border-2 { border: 2px solid var(--card-border); }
+        .border-4 { border: 4px solid #ffffff; }
+        .border-inner { border-color: #24242c; }
+        .border-brand { border-color: var(--brand); }
+        .border-brand-dim { border-color: rgba(255, 152, 0, 0.35); }
+        .border-emerald-dim { border-color: rgba(16, 185, 129, 0.35); }
+        .border-red-dim { border-color: rgba(239, 68, 68, 0.35); }
+        .border-white { border-color: #ffffff; }
+        .border-t { border-top: 1px solid var(--card-border); }
+        .border-b { border-bottom: 1px solid var(--card-border); }
+
+        .rounded { border-radius: 0.25rem; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .rounded-xl { border-radius: 0.75rem; }
+        .rounded-2xl { border-radius: 1rem; }
+        .rounded-full { border-radius: 9999px; }
+
+        /* Shadows & Transitions */
+        .shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+        .shadow-md { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5); }
+        .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.6); }
+        .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0,0,0,0.7); }
+        .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0,0,0,0.85); }
+        .transition { transition: all 0.15s ease-in-out; }
+        .rotate-180 { transform: rotate(180deg); }
+
+        /* Interactive Elements */
+        button, label[for], .cursor-pointer { cursor: pointer; }
+        button { border: none; font-family: inherit; }
+        button:active { transform: scale(0.97); }
+        .btn-brand:hover { background-color: var(--brand-dark); }
+        .btn-dark:hover { background-color: var(--btn-hover); }
+        .btn-emerald:hover { background-color: #059669; }
+        .btn-red:hover { background-color: rgba(239, 68, 68, 0.2); }
+        .hover-underline:hover { text-decoration: underline; }
+        .hover-text-white:hover { color: #ffffff; }
+        .hover-bg-card:hover { background-color: #202026; }
+
+        input[type="text"], input[type="number"] {
+            outline: none;
+            font-family: inherit;
+        }
+        input[type="text"]:focus, input[type="number"]:focus {
+            border-color: var(--brand);
+        }
+
+        /* Status Online/Offline Pill */
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 8px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 700;
+            border: 1px solid;
+        }
+        .status-online {
+            background-color: rgba(16, 185, 129, 0.12);
+            color: #34d399;
+            border-color: rgba(16, 185, 129, 0.35);
+        }
+        .status-offline {
+            background-color: rgba(255, 152, 0, 0.15);
+            color: #ffb74d;
+            border-color: rgba(255, 152, 0, 0.4);
+        }
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+        }
+        .status-online .status-dot { background-color: #10b981; box-shadow: 0 0 6px #10b981; }
+        .status-offline .status-dot { background-color: #ff9800; box-shadow: 0 0 6px #ff9800; }
+
+        /* Scanner Video & Laser Line */
+        .scanner-viewport {
+            position: relative;
+            width: 100%;
+            min-height: 240px;
+            background: #000;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .scanner-viewport video {
+            width: 100%;
+            height: 240px;
+            object-fit: cover;
+            display: block;
+        }
+        .scanner-laser {
+            position: absolute;
+            left: 10%;
+            right: 10%;
+            top: 50%;
+            height: 2px;
+            background: #ff3b30;
+            box-shadow: 0 0 8px #ff3b30;
+            pointer-events: none;
+            animation: scanPulse 2s infinite ease-in-out;
+        }
+        @keyframes scanPulse {
+            0%, 100% { transform: translateY(-35px); opacity: 0.7; }
+            50% { transform: translateY(35px); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- MAIN CONTAINER -->
+    <div class="container">
+
+        <!-- TOP STATUS BAR (ONLINE / OFFLINE INDIKÁTOR) -->
+        <div class="flex justify-between items-center mb-2 px-1">
+            <div class="text-xs font-extrabold tracking-wider text-brand uppercase">🍺 Pivovar Rudohor</div>
+            <div id="networkStatusPill" class="status-pill status-online" title="Aplikace funguje plně i bez internetu">
+                <span class="status-dot"></span>
+                <span id="networkStatusText">Online</span>
+            </div>
+        </div>
+
+        <!-- SEARCH & SCANNER BAR -->
+        <div class="relative mb-2 flex gap-2">
+            <div class="relative flex-grow">
+                <div class="absolute inset-y-0 left-0 pl-3-5 flex items-center pointer-events-none text-gray-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+                <input type="text" id="searchInput" oninput="filterProducts()" 
+                    placeholder="Hledat pivo nebo limonádu..." 
+                    class="w-full pl-10 pr-4 py-3 bg-card border rounded-xl text-white transition text-base">
+            </div>
+            <!-- SCANNER BUTTON -->
+            <button type="button" onclick="openScanner('scan')" class="bg-brand btn-brand text-gray-950 font-bold px-3 py-3 rounded-xl flex items-center justify-center gap-1-5 transition shrink-0" title="Naskenovat kód">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m0 14v1m8-8h-1M5 12H4m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+                <span class="text-xs font-bold">Skenovat</span>
+            </button>
+            <!-- MAP EAN BUTTON -->
+            <button type="button" onclick="openScanner('learn')" class="bg-btn-alt btn-dark text-brand border border-brand-dim font-bold px-3 py-3 rounded-xl flex items-center justify-center gap-1-5 transition shrink-0" title="Naučit nový EAN kód">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span class="text-xs font-bold">Učit EAN</span>
+            </button>
+        </div>
+
+        <!-- ACTION BUTTONS: ARCHIVE, SAVED EANS & SETTINGS -->
+        <div class="mb-3 px-1 flex justify-between items-center text-xs">
+            <div class="flex gap-2 items-center">
+                <!-- SWITCH MĚNY CZK / EUR -->
+                <button type="button" onclick="toggleCurrency()" class="bg-card border text-gray-200 font-bold px-2-5 py-1 rounded-lg flex items-center gap-1 transition text-xs">
+                    <span id="currencyBadge">CZK (Kč)</span>
+                    <span class="text-brand">⇄</span>
+                </button>
+            </div>
+            <div class="flex items-center gap-3">
+                <button type="button" onclick="showArchiveModal()" class="text-brand hover-underline font-semibold text-xs flex items-center gap-1" style="background:none;">
+                    📦 Archiv <span id="archiveCountBadge" class="bg-brand-dim text-brand px-1-5 py-0-5 rounded-full text-10">0</span>
+                </button>
+                <button type="button" onclick="showSavedEansModal()" class="text-brand hover-underline font-semibold text-xs flex items-center gap-1" style="background:none;">Správa EAN</button>
+                <!-- SKRYTÉ NASTAVENÍ KURZU (OZUBENÉ KOLEČKO) -->
+                <button type="button" onclick="openRateSettingsModal()" class="text-gray-400 hover-text-white p-1 rounded-lg btn-dark transition" style="background:none;" title="Nastavení kurzu">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- PRODUCTS LIST CONTAINER -->
+        <div id="productList" class="space-y-2 mb-4">
+            <!-- Dynamically rendered via JS -->
+        </div>
+
+        <!-- RETURNED / TAKEN KEGS & CRATES SECTION -->
+        <div class="bg-card border rounded-2xl p-3 mb-6 shadow-md">
+            <h3 class="font-bold text-sm text-white mb-2 flex items-center justify-between">
+                <span>🔄 Zálohy na obaly a sudy (Vratky / Nákup)</span>
+            </h3>
+            <div class="grid grid-cols-1 sm-grid-cols-3 gap-2 text-xs">
+                <!-- BEER KEG RETURN -->
+                <div class="bg-inner p-2-5 rounded-xl border border-inner flex justify-between items-center">
+                    <div>
+                        <div class="font-semibold text-gray-200">Vracení Sud Pivo</div>
+                        <div class="text-10 text-emerald font-bold" id="labelBeerKegDep">-1 200 Kč / ks</div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="changeReturnedKegs('beer', -1)" class="w-7 h-7 bg-btn btn-dark text-white rounded-lg font-bold text-sm flex items-center justify-center">-</button>
+                        <span id="returnedBeerKegsQty" class="w-5 text-center font-bold text-white text-base">0</span>
+                        <button type="button" onclick="changeReturnedKegs('beer', 1)" class="w-7 h-7 bg-brand btn-brand text-gray-950 rounded-lg font-bold text-sm flex items-center justify-center">+</button>
+                    </div>
+                </div>
+
+                <!-- LIMO KEG RETURN -->
+                <div class="bg-inner p-2-5 rounded-xl border border-inner flex justify-between items-center">
+                    <div>
+                        <div class="font-semibold text-gray-200">Vracení Sud Limo</div>
+                        <div class="text-10 text-emerald font-bold" id="labelLimoKegDep">-1 000 Kč / ks</div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="changeReturnedKegs('limo', -1)" class="w-7 h-7 bg-btn btn-dark text-white rounded-lg font-bold text-sm flex items-center justify-center">-</button>
+                        <span id="returnedLimoKegsQty" class="w-5 text-center font-bold text-white text-base">0</span>
+                        <button type="button" onclick="changeReturnedKegs('limo', 1)" class="w-7 h-7 bg-brand btn-brand text-gray-950 rounded-lg font-bold text-sm flex items-center justify-center">+</button>
+                    </div>
+                </div>
+
+                <!-- CRATE (PREPRAVKA) + / - -->
+                <div class="bg-inner p-2-5 rounded-xl border border-inner flex justify-between items-center">
+                    <div>
+                        <div class="font-semibold text-gray-200">Přepravka na pivo</div>
+                        <div class="text-10 text-brand font-bold" id="crateStatusLabel">±150 Kč / ks</div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="changeCrates(-1)" class="w-7 h-7 bg-btn btn-dark text-white rounded-lg font-bold text-sm flex items-center justify-center">-</button>
+                        <span id="cratesQty" class="w-6 text-center font-bold text-white text-base">0</span>
+                        <button type="button" onclick="changeCrates(1)" class="w-7 h-7 bg-brand btn-brand text-gray-950 rounded-lg font-bold text-sm flex items-center justify-center">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FIXED BOTTOM BAR WITH SUMMARY & ORDER BUTTON -->
+    <div class="fixed bottom-0 left-0 right-0 bg-bottom-bar border-t p-3 shadow-2xl z-20">
+        <div class="max-w-md mx-auto">
+            <!-- SUMMARY CARDS -->
+            <div class="grid grid-cols-2 gap-2 mb-2">
+                <div class="bg-card border rounded-lg p-2 text-center">
+                    <div class="text-11 uppercase tracking-wider text-gray-400">CENA ZA NÁPOJE</div>
+                    <div class="text-lg font-bold text-brand" id="sumBeverages">0 Kč</div>
+                </div>
+                <div class="bg-card border rounded-lg p-2 text-center">
+                    <div class="text-11 uppercase tracking-wider text-gray-400">ZÁLOHA / VRATKA</div>
+                    <div class="text-lg font-bold text-brand" id="sumDeposits">0 Kč</div>
+                </div>
+            </div>
+
+            <!-- DETAIL BUTTON -->
+            <button type="button" onclick="openModal()" class="w-full bg-brand btn-brand text-gray-950 font-bold py-3-5 px-4 rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-base">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012 2h2a2 2 0 012-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+                Zobrazit a kopírovat objednávku
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL NASTAVENÍ KURZU -->
+    <div id="rateSettingsModal" class="fixed inset-0 bg-modal-backdrop z-50 hidden flex items-center justify-center p-3">
+        <div class="bg-card border w-full max-w-xs rounded-2xl p-5 shadow-2xl relative flex flex-col">
+            <div class="flex justify-between items-center pb-3 border-b">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    ⚙️ Nastavení kurzu
+                </h3>
+                <button type="button" onclick="closeRateSettingsModal()" class="text-gray-400 hover-text-white p-1 rounded-lg btn-dark" style="background:none;">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="my-4 space-y-3">
+                <label class="text-xs text-gray-300 block font-medium">Kurz EUR (kolik Kč je 1 €):</label>
+                <div class="flex items-center gap-2">
+                    <input type="number" id="eurRateInput" step="0.1" min="1" value="24" class="w-full text-center py-2 bg-inner border border-brand rounded-xl text-xl font-bold text-white">
+                    <span class="text-sm text-gray-300 font-bold">Kč / €</span>
+                </div>
+            </div>
+            <div class="flex gap-2 pt-2 border-t">
+                <button type="button" onclick="saveEurRate()" class="w-full bg-brand btn-brand text-gray-950 font-bold py-2-5 rounded-xl transition text-sm shadow">
+                    Uložit kurz
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CAMERA & OFFLINE MANUAL SCANNER MODAL -->
+    <div id="scannerModal" class="fixed inset-0 bg-modal-backdrop z-50 hidden flex flex-col items-center justify-center p-4">
+        <div class="bg-card border w-full max-w-md rounded-2xl p-4 shadow-2xl relative flex flex-col items-center">
+            <div class="flex justify-between items-center w-full mb-3 pb-2 border-b">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2" id="scannerTitle">
+                    📷 Skenování EAN kódu
+                </h3>
+                <button type="button" onclick="closeScanner()" class="text-gray-400 hover-text-white p-1 rounded-lg btn-dark" style="background:none;">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Nativní video čtečka (funguje zcela offline přes prohlížeč) -->
+            <div id="reader" class="scanner-viewport">
+                <video id="scannerVideo" playsinline muted></video>
+                <div class="scanner-laser"></div>
+                <div id="scannerFallbackMsg" class="hidden p-4 text-center text-xs text-gray-300">
+                    Kamera není v tomto režimu dostupná nebo není podporována. Zadejte kód ručně nebo čtečkou níže.
+                </div>
+            </div>
+            
+            <p class="text-xs text-gray-400 mt-2 text-center" id="scannerSubtext">Naměř fotoaparát na čárkový kód na lahvi nebo sudu.</p>
+            
+            <!-- RUČNÍ / HW ČTEČKA VSTUP (100% ZÁLOHA PRO OFFLINE / FILE:///) -->
+            <div class="w-full mt-3 pt-3 border-t flex gap-2">
+                <input type="text" id="manualEanInput" inputmode="numeric" placeholder="Nebo zadejte EAN ručně / čtečkou..." 
+                    onkeydown="if(event.key==='Enter') submitManualEan()"
+                    class="flex-grow px-3 py-2 bg-inner border rounded-xl text-white text-sm font-mono">
+                <button type="button" onclick="submitManualEan()" class="bg-brand btn-brand text-gray-950 font-bold px-3 py-2 rounded-xl text-xs shrink-0">
+                    Potvrdit
+                </button>
+            </div>
+
+            <button type="button" onclick="closeScanner()" class="mt-3 w-full bg-btn-alt btn-dark text-white font-medium py-2-5 rounded-xl transition text-sm">
+                Zavřít skener
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL PRO POTVRZENÍ MNOŽSTVÍ PO NASKENOVÁNÍ -->
+    <div id="scanQtyModal" class="fixed inset-0 bg-modal-backdrop z-50 hidden flex items-center justify-center p-3">
+        <div class="bg-card border w-full max-w-md rounded-2xl p-5 shadow-2xl relative flex flex-col">
+            <div class="pb-3 border-b text-center">
+                <span class="text-xs font-semibold text-brand tracking-wider uppercase">Naskenovaná položka</span>
+                <h3 class="text-lg font-bold text-white mt-1" id="scannedProductName">Pivo</h3>
+                <p class="text-xs text-gray-400" id="scannedProductFmt">Format</p>
+            </div>
+            
+            <div class="my-5 flex flex-col items-center justify-center gap-3">
+                <label class="text-xs text-gray-300 font-medium">Zadejte nebo upravte počet kusů:</label>
+                <div class="flex items-center gap-3">
+                    <button type="button" onclick="adjustScanQty(-1)" class="w-12 h-12 bg-btn-alt btn-dark text-white rounded-xl font-bold text-xl flex items-center justify-center shadow">-</button>
+                    <input type="number" id="scannedQtyInput" value="1" min="1" class="w-24 text-center py-2 bg-inner border-2 border-brand rounded-xl text-2xl font-bold text-white">
+                    <button type="button" onclick="adjustScanQty(1)" class="w-12 h-12 bg-brand btn-brand text-gray-950 rounded-xl font-bold text-xl flex items-center justify-center shadow">+</button>
+                </div>
+                <div class="flex gap-2 mt-1">
+                    <button type="button" onclick="setScanQty(1)" class="px-3 py-1 bg-btn btn-dark text-gray-200 text-xs font-semibold rounded-lg border">1 ks</button>
+                    <button type="button" onclick="setScanQty(2)" class="px-3 py-1 bg-btn btn-dark text-gray-200 text-xs font-semibold rounded-lg border">2 ks</button>
+                    <button type="button" onclick="setScanQty(5)" class="px-3 py-1 bg-btn btn-dark text-gray-200 text-xs font-semibold rounded-lg border">5 ks</button>
+                    <button type="button" onclick="setScanQty(10)" class="px-3 py-1 bg-btn btn-dark text-gray-200 text-xs font-semibold rounded-lg border">10 ks</button>
+                </div>
+            </div>
+
+            <div class="flex gap-2 pt-2 border-t">
+                <button type="button" onclick="closeScanQtyModal()" class="w-1-3 bg-btn-alt btn-dark text-white font-medium py-3 rounded-xl transition text-sm">
+                    Zrušit
+                </button>
+                <button type="button" onclick="confirmScannedQty()" class="w-2-3 bg-brand btn-brand text-gray-950 font-bold py-3 rounded-xl transition text-sm shadow-lg flex items-center justify-center gap-1">
+                    <span>Přidat do objednávky</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAIRING MODAL -->
+    <div id="pairModal" class="fixed inset-0 bg-modal-backdrop z-50 hidden flex items-center justify-center p-3">
+        <div class="bg-card border w-full max-w-md rounded-2xl p-4 shadow-2xl relative max-h-90vh flex flex-col">
+            <div class="pb-3 border-b">
+                <h3 class="text-base font-bold text-white">Spárovat naskenovaný EAN</h3>
+                <p class="text-xs text-brand font-mono mt-1" id="scannedCodeDisplay">EAN: -</p>
+            </div>
+            <p class="text-xs text-gray-400 my-2">Vyberte pivo a balení, kterému tento kód patří:</p>
+            <div id="pairProductList" class="overflow-y-auto space-y-2 flex-grow pr-1 text-sm">
+                <!-- Product selection generated via JS -->
+            </div>
+            <button type="button" onclick="closePairModal()" class="mt-3 w-full bg-btn-alt btn-dark text-white font-medium py-2 rounded-xl transition text-sm">
+                Zrušit
+            </button>
+        </div>
+    </div>
+
+    <!-- SAVED EAN LIST MODAL -->
+    <div id="savedEansModal" class="fixed inset-0 bg-modal-backdrop z-50 hidden flex items-center justify-center p-3">
+        <div class="bg-card border w-full max-w-md rounded-2xl p-4 shadow-2xl relative max-h-85vh flex flex-col">
+            <div class="flex justify-between items-center pb-3 border-b">
+                <h3 class="text-base font-bold text-white">Uložené EAN kódy</h3>
+                <button type="button" onclick="closeSavedEansModal()" class="text-gray-400 hover-text-white p-1 rounded-lg btn-dark" style="background:none;">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div id="savedEansList" class="overflow-y-auto my-3 space-y-3 flex-grow text-xs">
+                <!-- List populated by JS -->
+            </div>
+            <div class="pt-2 border-t flex justify-between gap-2">
+                <button type="button" onclick="clearAllEans()" class="text-xs text-red font-semibold px-2 py-1" style="background:none;">
+                    Smazat všechny kódy
+                </button>
+                <button type="button" onclick="closeSavedEansModal()" class="bg-btn-alt btn-dark text-white font-medium px-4 py-2 rounded-xl text-xs">
+                    Zavřít
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BARCODE ZOOM MODAL (FULL SCREEN VIEW) -->
+    <div id="barcodeZoomModal" onclick="closeBarcodeZoomModal()" class="fixed inset-0 bg-modal-backdrop z-50 hidden flex items-center justify-center p-4">
+        <div onclick="event.stopPropagation()" class="bg-card border w-full max-w-md rounded-2xl p-6 shadow-2xl relative flex flex-col items-center text-center">
+            <button type="button" onclick="closeBarcodeZoomModal()" class="absolute top-3 right-3 text-gray-400 hover-text-white p-1 rounded-lg btn-dark" style="background:none;">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+            <h3 class="text-base font-bold text-white mb-1" id="zoomProductName">Název produktu</h3>
+            <p class="text-xs text-brand font-mono mb-4" id="zoomEanCode">EAN: -</p>
+            
+            <div class="bg-white p-4 rounded-xl w-full flex items-center justify-center border-2 border-white">
+                <svg id="zoomedBarcodeSvg" class="w-full h-36"></svg>
+            </div>
+            <p class="text-11 text-gray-400 mt-4">Klepnutím kamkoliv mimo nebo na tlačítko okno zavřete.</p>
+            <button type="button" onclick="closeBarcodeZoomModal()" class="mt-4 w-full bg-btn-alt btn-dark text-white font-medium py-2-5 rounded-xl transition text-xs">
+                Zavřít náhled
+            </button>
+        </div>
+    </div>
+
+    <!-- ARCHIVE / PAID ORDERS MODAL -->
+    <div id="archiveModal" class="fixed inset-0 bg-modal-backdrop z-50 hidden flex items-center justify-center p-3">
+        <div class="bg-card border w-full max-w-lg rounded-2xl p-4 shadow-2xl relative max-h-88vh flex flex-col">
+            <div class="flex justify-between items-center pb-3 border-b">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    📦 Archiv zaplacených objednávek
+                </h3>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="printSelectedOrders()" class="bg-brand btn-brand text-gray-950 font-bold px-3 py-1-5 rounded-lg text-xs flex items-center gap-1 transition" title="Vytisknout zaškrtnuté objednávky">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                        </svg>
+                        <span>Tisk</span>
+                    </button>
+                    <button type="button" onclick="closeArchiveModal()" class="text-gray-400 hover-text-white p-1 rounded-lg btn-dark" style="background:none;">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- INFO & SYNC BAR -->
+            <div class="bg-inner border rounded-xl p-2-5 mt-2 text-11 text-gray-300 flex flex-col sm-flex-row sm-items-center justify-between gap-2">
+                <div class="text-gray-400">
+                    💾 Záloha pro přenos mezi zařízením:
+                </div>
+                <div class="flex items-center gap-1-5 shrink-0">
+                    <button type="button" onclick="exportArchiveFile()" class="bg-btn btn-dark text-brand border border-brand-dim font-semibold px-2-5 py-1 rounded-lg transition">
+                        ⬇️ Exportovat
+                    </button>
+                    <label class="bg-btn btn-dark text-emerald border border-emerald-dim font-semibold px-2-5 py-1 rounded-lg transition cursor-pointer">
+                        ⬆️ Importovat
+                        <input type="file" id="importArchiveInput" accept=".json,application/json" onchange="importArchiveFile(event)" class="hidden">
+                    </label>
+                </div>
+            </div>
+
+            <!-- SELECT ALL BAR -->
+            <div class="flex justify-between items-center px-1 py-2 text-xs text-gray-400 border-b my-1">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAllArchive(this)" class="w-4 h-4 rounded cursor-pointer">
+                    <span class="font-semibold text-gray-300">Vybrat všechny objednávky</span>
+                </label>
+                <span id="selectedCountLabel" class="font-bold text-brand">Vybráno: 0</span>
+            </div>
+
+            <div id="archiveList" class="overflow-y-auto my-2 space-y-3 flex-grow text-xs pr-1">
+                <!-- Archive list rendered via JS -->
+            </div>
+            <div class="pt-2 border-t flex justify-between gap-2">
+                <button type="button" onclick="clearArchive()" class="text-xs text-red font-semibold px-2 py-1" style="background:none;">
+                    Vymazat archiv
+                </button>
+                <button type="button" onclick="closeArchiveModal()" class="bg-btn-alt btn-dark text-white font-medium px-4 py-2 rounded-xl text-xs">
+                    Zavřít
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ORDER DETAIL MODAL -->
+    <div id="orderModal" class="fixed inset-0 bg-modal-backdrop z-50 hidden flex items-center justify-center p-3">
+        <div class="bg-card border w-full max-w-md rounded-2xl p-5 shadow-2xl relative max-h-90vh flex flex-col">
+            <div class="flex justify-between items-center pb-3 border-b">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    Detail Objednávky
+                </h3>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="toggleCurrency()" class="bg-btn-alt btn-dark text-brand border border-brand-dim font-bold px-2-5 py-1 rounded-lg text-xs transition">
+                        <span id="modalCurrencyBadge">Kč</span> ⇄
+                    </button>
+                    <button type="button" onclick="closeModal()" class="text-gray-400 hover-text-white p-1 rounded-lg btn-dark" style="background:none;">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div id="modalOrderItems" class="py-4 overflow-y-auto space-y-3 flex-grow text-sm">
+                <!-- Cart items populated by JS -->
+            </div>
+
+            <div class="pt-3 border-t space-y-2">
+                <!-- VELKÉ HLAVNÍ TLAČÍTKO ZAPLACENO -->
+                <button type="button" onclick="markAsPaid()" 
+                    class="w-full bg-emerald btn-emerald text-gray-950 font-extrabold py-4 px-4 rounded-xl shadow-xl transition flex items-center justify-center gap-2 text-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    ZAPLACENO (Uložit objednávku)
+                </button>
+
+                <!-- MALÁ TLAČÍTKA POD TÍM -->
+                <div class="flex justify-between items-center pt-1 px-1">
+                    <button type="button" onclick="resetAllOrders()" 
+                        class="bg-red-dim btn-red text-red border border-red-dim font-semibold py-2 px-3 rounded-lg transition text-xs flex items-center gap-1">
+                        <svg class="w-3-5 h-3-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                        Vynulovat
+                    </button>
+
+                    <div class="flex gap-1-5">
+                        <button type="button" onclick="sendToWhatsApp()" 
+                            title="Odeslat do WhatsApp"
+                            class="bg-btn-alt btn-dark text-emerald font-medium py-2 px-2-5 rounded-lg border transition text-xs flex items-center gap-1">
+                            <svg class="w-3-5 h-3-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
+                            </svg>
+                            <span>WhatsApp</span>
+                        </button>
+                        
+                        <button type="button" onclick="copyOrderText()" 
+                            title="Kopírovat text"
+                            class="bg-btn-alt btn-dark text-gray-300 font-medium py-2 px-2-5 rounded-lg border transition text-xs flex items-center gap-1">
+                            <svg class="w-3-5 h-3-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 012-2h2a2 2 0 012 2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+                            </svg>
+                            <span>Kopírovat</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="fixed top-5 left-1-2 -translate-x-1-2 bg-brand text-gray-950 px-4 py-2 rounded-xl font-bold shadow-2xl transition pointer-events-none z-50 text-sm text-center" style="opacity: 0;">
+        Text byl zkopírován!
+    </div>
+
+    <script>
+        /* ==========================================================================
+           1. VESTAVĚNÉ OFFLINE KNIHOVNY (QR KÓDY + ČÁROVÉ KÓDY EAN-13 / EAN-8 / CODE128)
+           Díky tomuto kódu nepotřebuje aplikace žádné externí CDN soubory z internetu.
+           ========================================================================== */
+
+        // VESTAVĚNÝ GENERÁTOR ČÁROVÝCH KÓDŮ (SVG)
+        const OfflineBarcode = (function() {
+            const L_CODES = ["0001101","0011001","0010011","0111101","0100011","0110001","0101111","0111011","0110111","0001011"];
+            const G_CODES = ["0100111","0110011","0011011","0100001","0011101","0111001","0000101","0010001","0001001","0010111"];
+            const R_CODES = ["1110010","1100110","1101100","1000010","1011100","1001110","1010000","1000100","1001000","1110100"];
+            const PARITY  = ["LLLLLL","LLGLGG","LLGGLG","LLGGGL","LGLLGG","LGGLLG","LGGGLL","LGLGLG","LGLGGL","LGGLGL"];
+
+            function encodeEAN13(code) {
+                const first = parseInt(code[0], 10);
+                const par = PARITY[first];
+                let bits = "101";
+                for (let i = 1; i <= 6; i++) {
+                    const d = parseInt(code[i], 10);
+                    bits += (par[i - 1] === 'L') ? L_CODES[d] : G_CODES[d];
+                }
+                bits += "01010";
+                for (let i = 7; i <= 12; i++) {
+                    bits += R_CODES[parseInt(code[i], 10)];
+                }
+                bits += "101";
+                return bits;
+            }
+
+            function encodeEAN8(code) {
+                let bits = "101";
+                for (let i = 0; i < 4; i++) bits += L_CODES[parseInt(code[i], 10)];
+                bits += "01010";
+                for (let i = 4; i < 8; i++) bits += R_CODES[parseInt(code[i], 10)];
+                bits += "101";
+                return bits;
+            }
+
+            function encodeFallback(text) {
+                let bits = "1010110";
+                for (let i = 0; i < text.length; i++) {
+                    const bin = text.charCodeAt(i).toString(2).padStart(8, '0');
+                    bits += "10" + bin + "01";
+                }
+                bits += "110101";
+                return bits;
+            }
+
+            function renderToSvg(svgEl, code, options = {}) {
+                if (!svgEl) return;
+                const clean = String(code).trim();
+                let bits = "";
+                if (/^\d{13}$/.test(clean)) bits = encodeEAN13(clean);
+                else if (/^\d{8}$/.test(clean)) bits = encodeEAN8(clean);
+                else bits = encodeFallback(clean);
+
+                const barWidth = options.width || 2;
+                const height = options.height || 60;
+                const fontSize = options.fontSize || 14;
+                const margin = 10;
+                const totalWidth = bits.length * barWidth + margin * 2;
+                const totalHeight = height + fontSize + 10;
+
+                svgEl.setAttribute("viewBox", `0 0 ${totalWidth} ${totalHeight}`);
+                let rects = `<rect x="0" y="0" width="${totalWidth}" height="${totalHeight}" fill="#ffffff"/>`;
+                
+                for (let i = 0; i < bits.length; i++) {
+                    if (bits[i] === '1') {
+                        rects += `<rect x="${margin + i * barWidth}" y="4" width="${barWidth}" height="${height}" fill="#000000"/>`;
+                    }
+                }
+                rects += `<text x="${totalWidth / 2}" y="${height + fontSize + 4}" text-anchor="middle" font-family="monospace" font-size="${fontSize}" font-weight="bold" fill="#000000">${clean}</text>`;
+                svgEl.innerHTML = rects;
+            }
+
+            return { renderToSvg };
+        })();
+
+        // VESTAVĚNÝ OFFLINE GENERÁTOR QR KÓDŮ (PRO ČESKOU QR PLATBU SPD 1.0)
+        const OfflineQR = (function() {
+            // Reed-Solomon & QR Byte-mode encoder (verze 1 až 10, úroveň M/L)
+            const EXP = new Uint8Array(512);
+            const LOG = new Uint8Array(256);
+            let x = 1;
+            for (let i = 0; i < 255; i++) {
+                EXP[i] = x;
+                LOG[x] = i;
+                x = (x << 1) ^ (x & 128 ? 0x11d : 0);
+            }
+            for (let i = 255; i < 512; i++) EXP[i] = EXP[i - 255];
+
+            function gfMul(a, b) {
+                return (a === 0 || b === 0) ? 0 : EXP[LOG[a] + LOG[b]];
+            }
+
+            function rsGenPoly(deg) {
+                let poly = [1];
+                for (let i = 0; i < deg; i++) {
+                    const next = new Array(poly.length + 1).fill(0);
+                    for (let j = 0; j < poly.length; j++) {
+                        next[j] ^= poly[j];
+                        next[j + 1] ^= gfMul(poly[j], EXP[i]);
+                    }
+                    poly = next;
+                }
+                return poly;
+            }
+
+            function rsCompute(data, ecLen) {
+                const gen = rsGenPoly(ecLen);
+                const res = new Array(ecLen).fill(0);
+                for (let i = 0; i < data.length; i++) {
+                    const factor = data[i] ^ res.shift();
+                    res.push(0);
+                    for (let j = 0; j < ecLen; j++) {
+                        res[j] ^= gfMul(gen[j + 1], factor);
+                    }
+                }
+                return res;
+            }
+
+            // Tabulka kapacit pro QR Verze 1-8 (EC Level M)
+            const VERSIONS_M = [
+                null,
+                { size: 21, total: 26, data: 16, ec: 10, blocks: 1 },
+                { size: 25, total: 44, data: 28, ec: 16, blocks: 1 },
+                { size: 29, total: 70, data: 44, ec: 26, blocks: 1 },
+                { size: 33, total: 100, data: 64, ec: 36, blocks: 2 },
+                { size: 37, total: 134, data: 86, ec: 48, blocks: 2 },
+                { size: 41, total: 172, data: 108, ec: 64, blocks: 4 },
+                { size: 45, total: 196, data: 124, ec: 72, blocks: 4 },
+                { size: 49, total: 242, data: 154, ec: 88, blocks: 4 }
+            ];
+
+            const ALIGN_POS = [
+                null, [], [6, 18], [6, 22], [6, 26], [6, 30], [6, 34], [6, 22, 38], [6, 24, 42]
+            ];
+
+            function buildMatrix(text) {
+                const bytes = new TextEncoder().encode(text);
+                let ver = 1;
+                for (let v = 1; v < VERSIONS_M.length; v++) {
+                    if (bytes.length + 3 <= VERSIONS_M[v].data) {
+                        ver = v;
+                        break;
+                    }
+                }
+                const info = VERSIONS_M[ver];
+                const size = info.size;
+
+                // Bit stream
+                const bits = [];
+                const pushBits = (val, len) => {
+                    for (let i = len - 1; i >= 0; i--) bits.push((val >> i) & 1);
+                };
+                pushBits(0b0100, 4); // Byte mode
+                pushBits(bytes.length, 8);
+                for (let b of bytes) pushBits(b, 8);
+                pushBits(0, Math.min(4, info.data * 8 - bits.length));
+                while (bits.length % 8 !== 0) bits.push(0);
+
+                const codewords = [];
+                for (let i = 0; i < bits.length; i += 8) {
+                    let byte = 0;
+                    for (let j = 0; j < 8; j++) byte = (byte << 1) | bits[i + j];
+                    codewords.push(byte);
+                }
+                const pads = [0xec, 0x11];
+                let padIdx = 0;
+                while (codewords.length < info.data) {
+                    codewords.push(pads[padIdx++ % 2]);
+                }
+
+                // Rozdělení na bloky a EC
+                const blockDataLen = Math.floor(info.data / info.blocks);
+                const blockEcLen = Math.floor(info.ec / info.blocks);
+                const dataBlocks = [];
+                const ecBlocks = [];
+                let offset = 0;
+                for (let b = 0; b < info.blocks; b++) {
+                    const slice = codewords.slice(offset, offset + blockDataLen);
+                    offset += blockDataLen;
+                    dataBlocks.push(slice);
+                    ecBlocks.push(rsCompute(slice, blockEcLen));
+                }
+
+                const finalBytes = [];
+                for (let i = 0; i < blockDataLen; i++) {
+                    for (let b = 0; b < info.blocks; b++) finalBytes.push(dataBlocks[b][i]);
+                }
+                for (let i = 0; i < blockEcLen; i++) {
+                    for (let b = 0; b < info.blocks; b++) finalBytes.push(ecBlocks[b][i]);
+                }
+
+                // Matice modulů (-1 = volné, 0 = bílá, 1 = černá)
+                const mat = Array.from({ length: size }, () => new Int8Array(size).fill(-1));
+                const isFunc = Array.from({ length: size }, () => new Uint8Array(size));
+
+                const setFunc = (r, c, val) => {
+                    if (r >= 0 && r < size && c >= 0 && c < size) {
+                        mat[r][c] = val ? 1 : 0;
+                        isFunc[r][c] = 1;
+                    }
+                };
+
+                // Finder patterns
+                const drawFinder = (r, c) => {
+                    for (let dr = -1; dr <= 7; dr++) {
+                        for (let dc = -1; dc <= 7; dc++) {
+                            const inOuter = dr >= 0 && dr <= 6 && dc >= 0 && dc <= 6;
+                            const inBorder = dr === 0 || dr === 6 || dc === 0 || dc === 6;
+                            const inCenter = dr >= 2 && dr <= 4 && dc >= 2 && dc <= 4;
+                            setFunc(r + dr, c + dc, inOuter && (inBorder || inCenter));
+                        }
+                    }
+                };
+                drawFinder(0, 0);
+                drawFinder(0, size - 7);
+                drawFinder(size - 7, 0);
+
+                // Alignment patterns
+                const ap = ALIGN_POS[ver];
+                for (let r of ap) {
+                    for (let c of ap) {
+                        if (isFunc[r][c]) continue;
+                        for (let dr = -2; dr <= 2; dr++) {
+                            for (let dc = -2; dc <= 2; dc++) {
+                                const val = Math.abs(dr) === 2 || Math.abs(dc) === 2 || (dr === 0 && dc === 0);
+                                setFunc(r + dr, c + dc, val);
+                            }
+                        }
+                    }
+                }
+
+                // Timing patterns
+                for (let i = 8; i < size - 8; i++) {
+                    if (!isFunc[6][i]) setFunc(6, i, i % 2 === 0);
+                    if (!isFunc[i][6]) setFunc(i, 6, i % 2 === 0);
+                }
+
+                // Rezervace pro formátovací informace + Dark Module
+                setFunc(size - 8, 8, 1);
+                for (let i = 0; i < 9; i++) {
+                    if (!isFunc[8][i]) setFunc(8, i, 0);
+                    if (!isFunc[i][8]) setFunc(i, 8, 0);
+                }
+                for (let i = 0; i < 8; i++) {
+                    if (!isFunc[8][size - 1 - i]) setFunc(8, size - 1 - i, 0);
+                    if (!isFunc[size - 1 - i][8]) setFunc(size - 1 - i, 8, 0);
+                }
+
+                // Zápis datových bitů (zig-zag + maska 0: (r + c) % 2 === 0)
+                let bitIdx = 0;
+                const totalBits = finalBytes.length * 8;
+                let upward = true;
+                for (let right = size - 1; right >= 1; right -= 2) {
+                    if (right === 6) right = 5;
+                    for (let vert = 0; vert < size; vert++) {
+                        const r = upward ? size - 1 - vert : vert;
+                        for (let j = 0; j < 2; j++) {
+                            const c = right - j;
+                            if (!isFunc[r][c]) {
+                                let bit = 0;
+                                if (bitIdx < totalBits) {
+                                    bit = (finalBytes[bitIdx >> 3] >> (7 - (bitIdx & 7))) & 1;
+                                    bitIdx++;
+                                }
+                                if ((r + c) % 2 === 0) bit ^= 1;
+                                mat[r][c] = bit;
+                            }
+                        }
+                    }
+                    upward = !upward;
+                }
+
+                // Format bits pro EC Level M (00) a Mask 0 (000) -> BCH = 0x5412
+                const fmt = 0x5412;
+                for (let i = 0; i <= 5; i++) setFunc(8, i, (fmt >> i) & 1);
+                setFunc(8, 7, (fmt >> 6) & 1);
+                setFunc(8, 8, (fmt >> 7) & 1);
+                setFunc(7, 8, (fmt >> 8) & 1);
+                for (let i = 9; i < 15; i++) setFunc(14 - i, 8, (fmt >> i) & 1);
+
+                for (let i = 0; i < 8; i++) setFunc(size - 1 - i, 8, (fmt >> i) & 1);
+                for (let i = 8; i < 15; i++) setFunc(8, size - 15 + i, (fmt >> i) & 1);
+
+                return mat;
+            }
+
+            function renderToCanvas(canvas, text, canvasSize = 260) {
+                if (!canvas) return;
+                const mat = buildMatrix(text);
+                const modules = mat.length;
+                const quietZone = 4;
+                const totalModules = modules + quietZone * 2;
+                const scale = Math.floor(canvasSize / totalModules) || 4;
+                const realSize = totalModules * scale;
+
+                canvas.width = realSize;
+                canvas.height = realSize;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, realSize, realSize);
+                ctx.fillStyle = '#000000';
+
+                for (let r = 0; r < modules; r++) {
+                    for (let c = 0; c < modules; c++) {
+                        if (mat[r][c] === 1) {
+                            ctx.fillRect((c + quietZone) * scale, (r + quietZone) * scale, scale, scale);
+                        }
+                    }
+                }
+            }
+
+            return { renderToCanvas };
+        })();
+
+
+        /* ==========================================================================
+           2. OFFLINE SERVICE WORKER REGISTRACE (PODLE NÁVODU Z OBRÁZKU)
+           Umožňuje načtení a běh stránky i po ztrátě signálu přes HTTP/HTTPS server.
+           ========================================================================== */
+        function registerOfflineServiceWorker() {
+            if ('serviceWorker' in navigator && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
+                const swCode = `
+                    const CACHE_NAME = 'rudohor-offline-v1';
+                    self.addEventListener('install', (event) => {
+                        self.skipWaiting();
+                        event.waitUntil(
+                            caches.open(CACHE_NAME).then((cache) => cache.addAll([self.registration.scope]))
+                        );
+                    });
+                    self.addEventListener('activate', (event) => {
+                        event.waitUntil(self.clients.claim());
+                    });
+                    self.addEventListener('fetch', (event) => {
+                        if (event.request.method !== 'GET') return;
+                        event.respondWith(
+                            caches.match(event.request).then((cached) => {
+                                const networkFetch = fetch(event.request).then((response) => {
+                                    if (response && response.status === 200) {
+                                        const clone = response.clone();
+                                        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+                                    }
+                                    return response;
+                                }).catch(() => cached);
+                                return cached || networkFetch;
+                            })
+                        );
+                    });
+                `;
+                try {
+                    const blob = new Blob([swCode], { type: 'application/javascript' });
+                    const swUrl = URL.createObjectURL(blob);
+                    navigator.serviceWorker.register(swUrl).catch(() => {});
+                } catch (e) {}
+            }
+        }
+
+        function updateOnlineStatusUI() {
+            const pill = document.getElementById('networkStatusPill');
+            const text = document.getElementById('networkStatusText');
+            if (!pill || !text) return;
+
+            if (navigator.onLine) {
+                pill.className = 'status-pill status-online';
+                text.innerText = 'Online';
+            } else {
+                pill.className = 'status-pill status-offline';
+                text.innerText = 'Offline režim (Uloženo)';
+            }
+        }
+
+        window.addEventListener('online', () => {
+            updateOnlineStatusUI();
+            showToast('🌐 Připojení k internetu obnoveno (Online)');
+        });
+        window.addEventListener('offline', () => {
+            updateOnlineStatusUI();
+            showToast('📴 Jste offline – aplikace běží dál bez internetu!');
+        });
+
+
+        /* ==========================================================================
+           3. APLIKAČNÍ LOGIKA KALKULAČKY PIVOVARU RUDOHOR
+           ========================================================================== */
+        const DEPOSIT_BEER = 1200;
+        const DEPOSIT_LIMO = 1000;
+        const DEPOSIT_CRATE = 150;
+        
+        const BANK_IBAN = "CZ7462106701002228815029";
+        const RECIPIENT_NAME = "PETR ŠTĚPÁN";
+
+        const KEG_KEYS = ['k50', 'k30', 'k15'];
+
+        let returnedBeerKegs = 0;
+        let returnedLimoKegs = 0;
+        let cratesQty = 0; 
+
+        let isProcessingScan = false;
+        let pendingScannedItem = null;
+        let openAccordions = {};
+
+        // SAFE STORAGE HELPER
+        const memoryStorage = {};
+        function safeGetItem(key) {
+            try {
+                const val = window.localStorage.getItem(key);
+                if (val !== null) return val;
+            } catch (e) {}
+            return memoryStorage[key] || null;
+        }
+        function safeSetItem(key, value) {
+            memoryStorage[key] = value;
+            try {
+                window.localStorage.setItem(key, value);
+            } catch (e) {}
+        }
+        function safeRemoveItem(key) {
+            delete memoryStorage[key];
+            try {
+                window.localStorage.removeItem(key);
+            } catch (e) {}
+        }
+
+        // CURRENCY & EXCHANGE RATE
+        let currentCurrency = 'CZK';
+        let eurRate = 24.0;
+
+        function loadEurRate() {
+            const savedRate = safeGetItem('RUDOHOR_EUR_RATE');
+            if (savedRate) {
+                eurRate = parseFloat(savedRate) || 24.0;
+            }
+        }
+
+        function saveEurRate() {
+            const inputVal = parseFloat(document.getElementById('eurRateInput').value);
+            if (inputVal && inputVal > 0) {
+                eurRate = inputVal;
+                safeSetItem('RUDOHOR_EUR_RATE', String(eurRate));
+                showToast(`Kurz EUR uložen: 1 € = ${eurRate} Kč`);
+                closeRateSettingsModal();
+                calculateTotals();
+                renderProducts(document.getElementById('searchInput').value);
+            } else {
+                alert("Zadejte platný kurz!");
+            }
+        }
+
+        function openRateSettingsModal() {
+            document.getElementById('eurRateInput').value = eurRate;
+            document.getElementById('rateSettingsModal').classList.remove('hidden');
+        }
+
+        function closeRateSettingsModal() {
+            document.getElementById('rateSettingsModal').classList.add('hidden');
+        }
+
+        function toggleCurrency() {
+            currentCurrency = currentCurrency === 'CZK' ? 'EUR' : 'CZK';
+            
+            const badge = document.getElementById('currencyBadge');
+            const modalBadge = document.getElementById('modalCurrencyBadge');
+            
+            if (badge) badge.innerText = currentCurrency === 'CZK' ? 'CZK (Kč)' : 'EUR (€)';
+            if (modalBadge) modalBadge.innerText = currentCurrency === 'CZK' ? 'Kč' : '€';
+
+            calculateTotals();
+            renderProducts(document.getElementById('searchInput').value);
+
+            if (!document.getElementById('orderModal').classList.contains('hidden')) {
+                openModal();
+            }
+        }
+
+        function formatPrice(amountCzk) {
+            const num = Number(amountCzk);
+            const safeVal = isNaN(num) ? 0 : num;
+            if (currentCurrency === 'EUR') {
+                const eurVal = safeVal / eurRate;
+                return `${eurVal.toLocaleString('cs-CZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
+            } else {
+                return `${safeVal.toLocaleString('cs-CZ')} Kč`;
+            }
+        }
+
+        const FORMAT_NAMES = {
+            k50: '50 l KEG',
+            k30: '30 l KEG',
+            k15: '15 l KEG',
+            p15: '1,5 l PET',
+            p10: '1,0 l PET',
+            s075: '0,75 l SKLO',
+            s05: '0,5 l SKLO'
+        };
+
+        // AUDIO BEEP FEEDBACK
+        let audioCtx = null;
+        function playBeepSound() {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1800, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.15);
+
+                if (navigator.vibrate) {
+                    navigator.vibrate(100);
+                }
+            } catch(e) {}
+        }
+
+        // FULL PRODUCTS DATASET
+        const PRODUCTS = [
+            { id: 'petnik_nealko', name: 'Rudohor PĚTNÍK Nealko Pivo', type: 'beer', prices: { k50: 2429, k30: 1509, p10: 65, s05: 50 } },
+            { id: 'petnik_nealko_ochucene', name: 'Rudohor PĚTNÍK Nealko Pivo (Grep/Malina)', type: 'beer', prices: { k50: 2551, k30: 1584, p10: 69, s05: 52 } },
+            { id: 'gros_10', name: 'Rudohor GROŠ 10° Světlé výčepní', type: 'beer', prices: { k50: 2429, k30: 1509, p15: 90, p10: 65, s075: 75, s05: 50 } },
+            { id: 'tolar_11', name: 'Rudohor TOLAR 11° Světlý ležák', type: 'beer', prices: { k50: 2724, k30: 1669, k15: 883, p15: 98, p10: 70, s075: 80, s05: 52 } },
+            { id: 'dukat_12', name: 'Rudohor DUKÁT 12° Premium ležák', type: 'beer', prices: { k50: 3141, k30: 1938, k15: 1031, p15: 111, p10: 77, s075: 88, s05: 58 } },
+            { id: 'gresle_13', name: 'Rudohor GREŠLE 13° Polotmavý ležák', type: 'beer', prices: { k50: 3202, k30: 1975, k15: 1043, p15: 113, p10: 80, s075: 92, s05: 60 } },
+            { id: 'schlick_svatecni', name: 'Rudohor SCHLICK Sváteční ležák', type: 'beer', prices: { k50: 3202, k30: 1975, k15: 1043, p15: 112, p10: 79, s075: 89, s05: 59 } },
+            { id: 'dollar_12', name: 'Rudohor DOLLAR 12° American Pale Ale', type: 'beer', prices: { k50: 3482, k30: 2135, k15: 1153, p15: 128, p10: 90, s075: 96, s05: 67 } },
+            { id: 'punt_14', name: 'Rudohor PUNT ÉIREANNACH 14° Stout', type: 'beer', prices: { k50: 3751, k30: 2307, k15: 1239, p10: 100, s075: 102, s05: 76 } },
+            { id: 'rupya_14', name: 'Rudohor RŪPYA 14° India Pale Ale', type: 'beer', prices: { k50: 3914, k30: 2380, k15: 1313, p15: 146, p10: 106, s075: 107, s05: 80 } },
+            { id: 'darkove_baleni', name: 'Dárkové balení piva (Ležák, Stout, Ale)', type: 'beer', prices: { s075: 340 } },
+            { id: 'limo_rudohorka', name: 'Limonáda Rudohorka (Malina, Pomeranč, Ananas, Vinea, Bezinka)', type: 'limo', prices: { k50: 1297, p10: 60 } },
+            { id: 'cent_8', name: 'Rudohor CENT Session ALE 8°', type: 'beer', prices: { k50: 2495, k30: 1531, p15: 94, p10: 68, s075: 77, s05: 52 } },
+            { id: 'summer_ale_10', name: 'Rudohor SUMMER Ale 10°', type: 'beer', prices: { k50: 3031, k30: 1865, p15: 111, p10: 77, s075: 85, s05: 58 } },
+            { id: 'sovereign_11', name: 'Rudohor SOVEREIGN 11° Session Ale', type: 'beer', prices: { k50: 3325, k30: 2036, k15: 1141, p15: 123, p10: 84, s075: 94, s05: 61 } },
+            { id: 'krejcar_11', name: 'Rudohor KREJCAR 11° Pšeničné světlé', type: 'beer', prices: { k50: 3136, k30: 1939, k15: 1059, p15: 116, p10: 82, s075: 90, s05: 59 } },
+            { id: 'denar_11', name: 'Rudohor DENÁR 11° Žitný svrchnák', type: 'beer', prices: { k50: 3248, k30: 2000, k15: 1128, p15: 121, p10: 83, s075: 92, s05: 60 } },
+            { id: 'escudo_11', name: 'Rudohor ESCUDO 11° Session IPA', type: 'beer', prices: { k50: 3411, k30: 2101, k15: 1186, p15: 127, p10: 89, s075: 100, s05: 58 } },
+            { id: 'bolivar_11', name: 'Rudohor Bolívar 11° Saison', type: 'beer', prices: { k50: 3424, k30: 2108, k15: 1196, p15: 128, p10: 87, s075: 97, s05: 64 } },
+            { id: 'dpl_mark_11', name: 'Rudohor DPL Mark 11°', type: 'beer', prices: { k50: 3248, k30: 2000, k15: 1128, p15: 121, p10: 83, s075: 92, s05: 60 } },
+            { id: 'vanocni_lezak', name: 'Rudohor Vánoční ležák', type: 'beer', prices: { k50: 3334, k30: 2074, k15: 1144, s075: 124 } },
+            { id: 'cryohor_12', name: 'Rudohor CRYOHOR 12°', type: 'beer', prices: { k50: 3582, k30: 2239, k15: 1201, p15: 133, p10: 93, s075: 108 } },
+            { id: 'svizzer_franc_12', name: 'Rudohor SVIZZER FRANC 12° Amber Ale', type: 'beer', prices: { k50: 3463, k30: 2153, k15: 1217, p15: 130, p10: 92, s075: 106, s05: 74 } },
+            { id: 'wiener_philharmoniker_12', name: 'Rudohor WIENER PHILHARMONIKER 12° Vídeňský ležák', type: 'beer', prices: { k50: 3300, k30: 2050, k15: 1160, p15: 124, p10: 85, s075: 97, s05: 63 } },
+            { id: 'winter_13', name: 'Rudohor WINTER 13° Red Ale', type: 'beer', prices: { k50: 3598, k30: 2233, k15: 1239, p15: 134, p10: 96, s075: 98, s05: 73 } },
+            { id: 'rand_ale_127', name: 'Rudohor Rand ALE 12,7° Pale Ale', type: 'beer', prices: { k50: 3658, k30: 2261, k15: 1256, p15: 142, p10: 96, s075: 102, s05: 77 } },
+            { id: 'peso_zappa_13', name: 'Rudohor PESO ZAPPA 13° Pale Ale', type: 'beer', prices: { k50: 3681, k30: 2282, k15: 1264, p15: 139, p10: 95, s075: 101, s05: 76 } },
+            { id: 'new_england_13', name: 'Rudohor NEW ENGLAND 13° IPA', type: 'beer', prices: { k50: 4382, k30: 2699, k15: 1509, p15: 165, p10: 122, s075: 137, s05: 96 } },
+            { id: 'smash_pound_14', name: 'Rudohor SMASH POUND 14° IPA', type: 'beer', prices: { k50: 3821, k30: 2356, k15: 1300, p15: 144, p10: 101, s075: 106, s05: 78 } },
+            { id: 'maple_leaf_14', name: 'Rudohor MAPLE LEAF COIN 14° West Coast IPA', type: 'beer', prices: { k50: 3868, k30: 2381, k15: 1337, p15: 148, p10: 108, s075: 108, s05: 81 } },
+            { id: 'bittcoin_15', name: 'Rudohor BITTCOIN REBELLIUM 15° IPA', type: 'beer', prices: { k50: 3926, k30: 2404, k15: 1361, p15: 149, p10: 110, s075: 112, s05: 84 } },
+            { id: 'hazy_coins_15', name: 'Rudohor HAZY COINS 15° NEIPA', type: 'beer', prices: { k50: 4616, k30: 2822, k15: 1619, p15: 177, p10: 131, s075: 147, s05: 100 } },
+            { id: 'ripple_16', name: 'Rudohor RIPPLE DDH 16° IPA', type: 'beer', prices: { k50: 3996, k30: 2466, k15: 1399, p15: 160, p10: 116, s075: 122, s05: 89 } },
+            { id: 'ethereum_17', name: 'Rudohor ETHEREUM Single Hop 17° IPA', type: 'beer', prices: { k50: 4125, k30: 2540, k15: 1435, p15: 171, p10: 123, s075: 132, s05: 95 } },
+            { id: 'cryptohop_18', name: 'Rudohor CRYPTOHOP RIOT 18° Double IPA', type: 'beer', prices: { k50: 4210, k30: 2600, k15: 1470, p15: 174, p10: 126, s075: 135, s05: 96 } }
+        ];
+
+        let state = {};
+        PRODUCTS.forEach(p => {
+            state[p.id] = {};
+            Object.keys(p.prices).forEach(fmtKey => {
+                state[p.id][fmtKey] = 0;
+            });
+        });
+
+        let EAN_MAP = {};
+
+        function loadEans() {
+            try {
+                const saved = safeGetItem('RUDOHOR_EAN_MAP');
+                if (saved) {
+                    EAN_MAP = JSON.parse(saved);
+                }
+            } catch(e) {
+                EAN_MAP = {};
+            }
+        }
+
+        function saveEans() {
+            try {
+                safeSetItem('RUDOHOR_EAN_MAP', JSON.stringify(EAN_MAP));
+            } catch(e) {}
+        }
+
+        function cleanEan(code) {
+            if (!code) return '';
+            return String(code).trim();
+        }
+
+        function isValidEan13(code) {
+            const clean = String(code).trim();
+            if (!/^\d{13}$/.test(clean)) {
+                if (/^\d{8}$/.test(clean)) return true;
+                return false;
+            }
+
+            let sum = 0;
+            for (let i = 0; i < 12; i++) {
+                const digit = parseInt(clean[i], 10);
+                sum += (i % 2 === 0) ? digit : digit * 3;
+            }
+            const checksum = (10 - (sum % 10)) % 10;
+            return checksum === parseInt(clean[12], 10);
+        }
+
+        function toggleAccordion(productId) {
+            openAccordions[productId] = !openAccordions[productId];
+            renderProducts(document.getElementById('searchInput').value);
+        }
+
+        function showSavedEansModal() {
+            renderSavedEansList();
+            document.getElementById('savedEansModal').classList.remove('hidden');
+        }
+
+        function closeSavedEansModal() {
+            document.getElementById('savedEansModal').classList.add('hidden');
+        }
+
+        function renderSavedEansList() {
+            const listEl = document.getElementById('savedEansList');
+            listEl.innerHTML = '';
+
+            const keys = Object.keys(EAN_MAP);
+            if (keys.length === 0) {
+                listEl.innerHTML = '<p class="text-gray-400 text-center py-4">Zatím nebyly uloženy žádné vlastní EAN kódy.</p>';
+                return;
+            }
+
+            const uniqueEntries = [];
+            const processedKeys = new Set();
+
+            keys.forEach(k => {
+                if (processedKeys.has(k)) return;
+                const entry = EAN_MAP[k];
+                processedKeys.add(k);
+                uniqueEntries.push({ ean: k, ...entry });
+            });
+
+            uniqueEntries.forEach((item, index) => {
+                const product = PRODUCTS.find(p => p.id === item.productId);
+                const pName = product ? product.name : item.productId;
+                const fName = FORMAT_NAMES[item.fmtKey] || item.fmtKey;
+                const svgId = `barcode_svg_${index}`;
+
+                const row = document.createElement('div');
+                row.className = 'bg-inner border rounded-xl p-3 flex flex-col gap-2 text-xs';
+                row.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="font-bold text-white text-xs">${pName}</div>
+                            <div class="text-brand font-semibold text-11">${fName}</div>
+                        </div>
+                        <button type="button" onclick="deleteEan('${item.ean}')" class="text-red p-1-5 bg-red-dim btn-red rounded-lg transition" title="Smazat EAN">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <!-- OFFLINE BARCODE VISUAL CONTAINER -->
+                    <div onclick="openBarcodeZoomModal('${item.ean}', '${pName} (${fName})')" class="bg-white p-2 rounded-lg flex justify-center items-center cursor-pointer border border-white transition shadow" title="Klepnutím zvětšíte čárový kód">
+                        <svg id="${svgId}" class="w-full h-16"></svg>
+                    </div>
+                    <div class="text-center font-mono text-gray-400 text-10">Ťukněte na kód pro zvětšení (EAN: ${item.ean})</div>
+                `;
+                listEl.appendChild(row);
+
+                setTimeout(() => {
+                    const svgEl = document.getElementById(svgId);
+                    OfflineBarcode.renderToSvg(svgEl, item.ean, { width: 2, height: 50, fontSize: 13 });
+                }, 20);
+            });
+        }
+
+        function openBarcodeZoomModal(eanCode, fullProductName) {
+            document.getElementById('zoomProductName').innerText = fullProductName;
+            document.getElementById('zoomEanCode').innerText = `EAN: ${eanCode}`;
+            
+            const zoomedSvg = document.getElementById('zoomedBarcodeSvg');
+            zoomedSvg.innerHTML = '';
+
+            document.getElementById('barcodeZoomModal').classList.remove('hidden');
+
+            setTimeout(() => {
+                OfflineBarcode.renderToSvg(zoomedSvg, eanCode, { width: 3, height: 100, fontSize: 18 });
+            }, 30);
+        }
+
+        function closeBarcodeZoomModal() {
+            document.getElementById('barcodeZoomModal').classList.add('hidden');
+        }
+
+        function deleteEan(eanCode) {
+            delete EAN_MAP[eanCode];
+            saveEans();
+            renderSavedEansList();
+            showToast('EAN kód byl smazán');
+        }
+
+        function clearAllEans() {
+            if (confirm('Opravdu chcete smazat všechny spárované EAN kódy?')) {
+                EAN_MAP = {};
+                saveEans();
+                renderSavedEansList();
+                showToast('Všechny EAN kódy byly smazány');
+            }
+        }
+
+        function changeReturnedKegs(type, delta) {
+            if (type === 'beer') {
+                returnedBeerKegs = Math.max(0, returnedBeerKegs + delta);
+                document.getElementById('returnedBeerKegsQty').innerText = returnedBeerKegs;
+            } else if (type === 'limo') {
+                returnedLimoKegs = Math.max(0, returnedLimoKegs + delta);
+                document.getElementById('returnedLimoKegsQty').innerText = returnedLimoKegs;
+            }
+            calculateTotals();
+        }
+
+        function changeCrates(delta) {
+            cratesQty += delta;
+            const el = document.getElementById('cratesQty');
+            const label = document.getElementById('crateStatusLabel');
+            if (el) el.innerText = cratesQty;
+            
+            if (label) {
+                if (cratesQty > 0) {
+                    label.innerText = `+${formatPrice(cratesQty * DEPOSIT_CRATE)} (Odběr)`;
+                    label.className = "text-10 text-brand font-bold";
+                } else if (cratesQty < 0) {
+                    label.innerText = `${formatPrice(cratesQty * DEPOSIT_CRATE)} (Vratka)`;
+                    label.className = "text-10 text-emerald font-bold";
+                } else {
+                    label.innerText = `±${formatPrice(DEPOSIT_CRATE)} / ks`;
+                    label.className = "text-10 text-brand font-bold";
+                }
+            }
+            calculateTotals();
+        }
+
+        function renderProducts(filterText = '') {
+            const container = document.getElementById('productList');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const search = filterText.toLowerCase().trim();
+
+            const beerDepLabel = document.getElementById('labelBeerKegDep');
+            const limoDepLabel = document.getElementById('labelLimoKegDep');
+            if (beerDepLabel) beerDepLabel.innerText = `-${formatPrice(DEPOSIT_BEER)} / ks`;
+            if (limoDepLabel) limoDepLabel.innerText = `-${formatPrice(DEPOSIT_LIMO)} / ks`;
+
+            PRODUCTS.forEach(p => {
+                if (search && !p.name.toLowerCase().includes(search)) return;
+
+                let totalProductQty = 0;
+                Object.keys(p.prices).forEach(fmtKey => {
+                    totalProductQty += (state[p.id][fmtKey] || 0);
+                });
+
+                const isOpen = search.length > 0 ? true : !!openAccordions[p.id];
+
+                const card = document.createElement('div');
+                card.className = 'bg-card border rounded-xl overflow-hidden shadow-md transition';
+
+                let formatsHtml = '';
+
+                Object.keys(p.prices).forEach(fmtKey => {
+                    const priceCzk = p.prices[fmtKey];
+                    const fmtName = FORMAT_NAMES[fmtKey] || fmtKey;
+                    const qty = state[p.id][fmtKey] || 0;
+
+                    formatsHtml += `
+                        <div class="bg-inner p-2-5 rounded-xl border border-inner flex justify-between items-center text-xs">
+                            <div>
+                                <span class="font-semibold text-gray-200">${fmtName}</span>
+                                <span class="text-brand font-bold ml-1-5">${formatPrice(priceCzk)}</span>
+                            </div>
+                            <div class="flex items-center gap-1-5">
+                                <button type="button" onclick="changeQty('${p.id}', '${fmtKey}', -1)" class="w-8 h-8 bg-btn btn-dark text-white rounded-lg font-bold text-base flex items-center justify-center">-</button>
+                                <span id="qty_${p.id}_${fmtKey}" class="w-6 text-center font-bold text-white text-base">${qty}</span>
+                                <button type="button" onclick="changeQty('${p.id}', '${fmtKey}', 1)" class="w-8 h-8 bg-brand btn-brand text-gray-950 rounded-lg font-bold text-base flex items-center justify-center">+</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                const badgeHtml = totalProductQty > 0 
+                    ? `<span class="bg-brand text-gray-950 font-extrabold text-xs px-2 py-0-5 rounded-full shadow">${totalProductQty} ks</span>` 
+                    : '';
+
+                const arrowIcon = isOpen 
+                    ? `<svg class="w-5 h-5 text-brand rotate-180 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>`
+                    : `<svg class="w-5 h-5 text-gray-400 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>`;
+
+                card.innerHTML = `
+                    <button type="button" onclick="toggleAccordion('${p.id}')" class="w-full p-3-5 flex justify-between items-center text-left bg-card hover-bg-card transition">
+                        <span class="font-bold text-sm text-white pr-2">${p.name}</span>
+                        <div class="flex items-center gap-2-5 shrink-0">
+                            ${badgeHtml}
+                            ${arrowIcon}
+                        </div>
+                    </button>
+
+                    <div class="${isOpen ? 'block' : 'hidden'} px-3 pb-3 pt-1 border-t border-inner" style="background-color:#141417;">
+                        <div class="grid grid-cols-1 sm-grid-cols-2 gap-2 mt-1">
+                            ${formatsHtml}
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function changeQty(productId, fmtKey, delta) {
+            if (!state[productId]) state[productId] = {};
+            state[productId][fmtKey] = Math.max(0, (state[productId][fmtKey] || 0) + delta);
+            
+            const el = document.getElementById(`qty_${productId}_${fmtKey}`);
+            if (el) el.innerText = state[productId][fmtKey];
+            
+            calculateTotals();
+            renderProducts(document.getElementById('searchInput').value);
+        }
+
+        function calculateTotals() {
+            let totalBevCzk = 0;
+            let totalDepCzk = 0;
+
+            PRODUCTS.forEach(p => {
+                Object.keys(p.prices).forEach(fmtKey => {
+                    const qty = state[p.id][fmtKey] || 0;
+                    if (qty > 0) {
+                        totalBevCzk += qty * p.prices[fmtKey];
+                        if (KEG_KEYS.includes(fmtKey)) {
+                            const depRate = p.type === 'limo' ? DEPOSIT_LIMO : DEPOSIT_BEER;
+                            totalDepCzk += qty * depRate;
+                        }
+                    }
+                });
+            });
+
+            totalDepCzk -= (returnedBeerKegs * DEPOSIT_BEER) + (returnedLimoKegs * DEPOSIT_LIMO);
+            totalDepCzk += (cratesQty * DEPOSIT_CRATE);
+
+            document.getElementById('sumBeverages').innerText = formatPrice(totalBevCzk);
+            
+            const depEl = document.getElementById('sumDeposits');
+            depEl.innerText = formatPrice(totalDepCzk);
+            if (totalDepCzk < 0) {
+                depEl.className = "text-lg font-bold text-emerald";
+            } else {
+                depEl.className = "text-lg font-bold text-brand";
+            }
+        }
+
+        function filterProducts() {
+            const query = document.getElementById('searchInput').value;
+            renderProducts(query);
+        }
+
+        /* ==========================================================================
+           4. NATIVNÍ OFFLINE ČTEČKA KÓDŮ (BarcodeDetector API + Ruční záloha)
+           Funguje bez stahování externích skriptů z internetu!
+           ========================================================================== */
+        let cameraStream = null;
+        let scanAnimFrame = null;
+        let nativeDetector = null;
+        let currentScanMode = 'scan'; 
+
+        async function openScanner(mode = 'scan') {
+            currentScanMode = mode;
+            isProcessingScan = false;
+
+            const titleEl = document.getElementById('scannerTitle');
+            const subtextEl = document.getElementById('scannerSubtext');
+            const manualInput = document.getElementById('manualEanInput');
+            const fallbackMsg = document.getElementById('scannerFallbackMsg');
+            const videoEl = document.getElementById('scannerVideo');
+
+            if (manualInput) manualInput.value = '';
+            if (fallbackMsg) fallbackMsg.classList.add('hidden');
+            if (videoEl) videoEl.classList.remove('hidden');
+
+            if (mode === 'learn') {
+                titleEl.innerText = '➕ Párování nového EAN kódu';
+                subtextEl.innerText = 'Naskenujte čárový kód z láhve/sudu nebo zadejte číslo EAN ručně.';
+            } else {
+                titleEl.innerText = '📷 Skenování EAN kódu';
+                subtextEl.innerText = 'Naměř fotoaparát na kód nebo použij ruční zadání níže.';
+            }
+
+            document.getElementById('scannerModal').classList.remove('hidden');
+
+            try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    throw new Error("Kamera není podporována");
+                }
+
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "environment" },
+                    audio: false
+                });
+                videoEl.srcObject = cameraStream;
+                await videoEl.play();
+
+                if ('BarcodeDetector' in window) {
+                    if (!nativeDetector) {
+                        nativeDetector = new window.BarcodeDetector({
+                            formats: ['ean_13', 'ean_8', 'code_128', 'upc_a', 'upc_e', 'qr_code']
+                        });
+                    }
+                    startDetectionLoop(videoEl);
+                } else {
+                    subtextEl.innerText = 'Kamera běží. Pro automatické čtení použijte ruční zadání nebo HW čtečku níže.';
+                }
+            } catch (err) {
+                if (videoEl) videoEl.classList.add('hidden');
+                if (fallbackMsg) fallbackMsg.classList.remove('hidden');
+                if (manualInput) manualInput.focus();
+            }
+        }
+
+        function startDetectionLoop(videoEl) {
+            const detect = async () => {
+                if (!cameraStream || isProcessingScan) return;
+                try {
+                    if (videoEl.readyState === videoEl.HAVE_ENOUGH_DATA) {
+                        const barcodes = await nativeDetector.detect(videoEl);
+                        if (barcodes && barcodes.length > 0) {
+                            const rawValue = barcodes[0].rawValue;
+                            if (rawValue) {
+                                onScanSuccess(rawValue);
+                                return;
+                            }
+                        }
+                    }
+                } catch (e) {}
+                scanAnimFrame = requestAnimationFrame(detect);
+            };
+            scanAnimFrame = requestAnimationFrame(detect);
+        }
+
+        function submitManualEan() {
+            const input = document.getElementById('manualEanInput');
+            if (!input) return;
+            const code = cleanEan(input.value);
+            if (!code) {
+                showToast('Zadejte prosím číslo čárového kódu.');
+                return;
+            }
+            onScanSuccess(code, true);
+        }
+
+        function closeScanner() {
+            if (scanAnimFrame) {
+                cancelAnimationFrame(scanAnimFrame);
+                scanAnimFrame = null;
+            }
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+            const videoEl = document.getElementById('scannerVideo');
+            if (videoEl) videoEl.srcObject = null;
+
+            document.getElementById('scannerModal').classList.add('hidden');
+            isProcessingScan = false;
+        }
+
+        function onScanSuccess(decodedText, skipChecksum = false) {
+            if (isProcessingScan) return;
+            
+            const cleanCode = cleanEan(decodedText);
+            if (!cleanCode) return;
+
+            if (!skipChecksum && !isValidEan13(cleanCode)) {
+                return;
+            }
+
+            isProcessingScan = true;
+
+            if (currentScanMode === 'learn') {
+                playBeepSound();
+                closeScanner();
+                openPairModal(cleanCode);
+            } else {
+                handleScannedEan(cleanCode);
+            }
+        }
+
+        function handleScannedEan(eanCode) {
+            const cleanCode = cleanEan(eanCode);
+            if (!cleanCode) {
+                isProcessingScan = false;
+                return;
+            }
+
+            let match = EAN_MAP[cleanCode];
+
+            if (match && match.productId && match.fmtKey) {
+                const { productId, fmtKey } = match;
+                playBeepSound();
+                closeScanner();
+                openScanQtyModal(productId, fmtKey);
+            } else {
+                playBeepSound();
+                closeScanner();
+
+                setTimeout(() => {
+                    if (confirm(`Nenalezen žádný produkt pro EAN: ${eanCode}\n\nChcete tento kód nyní spárovat s pivem?`)) {
+                        openPairModal(cleanCode);
+                    } else {
+                        isProcessingScan = false;
+                    }
+                }, 100);
+            }
+        }
+
+        function openScanQtyModal(productId, fmtKey) {
+            pendingScannedItem = { productId, fmtKey };
+            const product = PRODUCTS.find(p => p.id === productId);
+            const pName = product ? product.name : 'Pivo';
+            const fName = FORMAT_NAMES[fmtKey] || fmtKey;
+
+            document.getElementById('scannedProductName').innerText = pName;
+            document.getElementById('scannedProductFmt').innerText = fName;
+            document.getElementById('scannedQtyInput').value = 1;
+
+            document.getElementById('scanQtyModal').classList.remove('hidden');
+        }
+
+        function adjustScanQty(delta) {
+            const input = document.getElementById('scannedQtyInput');
+            let current = parseInt(input.value) || 1;
+            current = Math.max(1, current + delta);
+            input.value = current;
+        }
+
+        function setScanQty(val) {
+            document.getElementById('scannedQtyInput').value = val;
+        }
+
+        function confirmScannedQty() {
+            if (!pendingScannedItem) return;
+
+            const inputVal = parseInt(document.getElementById('scannedQtyInput').value) || 1;
+            const addQty = Math.max(1, inputVal);
+
+            const { productId, fmtKey } = pendingScannedItem;
+
+            openAccordions[productId] = true;
+            changeQty(productId, fmtKey, addQty);
+
+            const product = PRODUCTS.find(p => p.id === productId);
+            const pName = product ? product.name : 'Pivo';
+            const fName = FORMAT_NAMES[fmtKey] || fmtKey;
+            const totalQty = (state[productId] && state[productId][fmtKey]) || 0;
+
+            showToast(`➕ Přidáno ${addQty}x ${pName} (${fName}) [Celkem: ${totalQty} ks]`);
+
+            closeScanQtyModal();
+        }
+
+        function closeScanQtyModal() {
+            pendingScannedItem = null;
+            isProcessingScan = false;
+            document.getElementById('scanQtyModal').classList.add('hidden');
+        }
+
+        let pendingEan = null;
+
+        function openPairModal(eanCode) {
+            pendingEan = cleanEan(eanCode);
+            document.getElementById('scannedCodeDisplay').innerText = `EAN: ${pendingEan}`;
+
+            const listEl = document.getElementById('pairProductList');
+            listEl.innerHTML = '';
+
+            PRODUCTS.forEach(p => {
+                const pDiv = document.createElement('div');
+                pDiv.className = 'bg-inner border rounded-xl p-2-5 space-y-1-5';
+                
+                let btns = '';
+                Object.keys(p.prices).forEach(fmtKey => {
+                    const fmtName = FORMAT_NAMES[fmtKey] || fmtKey;
+                    btns += `
+                        <button type="button" onclick="savePairing('${p.id}', '${fmtKey}')" class="bg-btn-alt btn-dark text-white text-xs font-semibold px-2-5 py-1-5 rounded-lg transition border">
+                            ${fmtName}
+                        </button>
+                    `;
+                });
+
+                pDiv.innerHTML = `
+                    <div class="font-bold text-gray-200 text-xs">${p.name}</div>
+                    <div class="flex flex-wrap gap-1-5">${btns}</div>
+                `;
+                listEl.appendChild(pDiv);
+            });
+
+            document.getElementById('pairModal').classList.remove('hidden');
+        }
+
+        function savePairing(productId, fmtKey) {
+            if (!pendingEan) return;
+
+            const cleanCode = cleanEan(pendingEan);
+            EAN_MAP[cleanCode] = { productId, fmtKey };
+
+            saveEans();
+            closePairModal();
+
+            const inputEl = document.getElementById('scannedQtyInput');
+            const qtyToAdd = inputEl ? Math.max(1, parseInt(inputEl.value) || 1) : 1;
+
+            openAccordions[productId] = true;
+            changeQty(productId, fmtKey, qtyToAdd);
+
+            const product = PRODUCTS.find(p => p.id === productId);
+            const pName = product ? product.name : productId;
+            const fName = FORMAT_NAMES[fmtKey] || fmtKey;
+
+            showToast(`✅ EAN ${cleanCode} uložen a přidáno ${qtyToAdd}x ${pName} (${fName})`);
+            isProcessingScan = false;
+        }
+
+        function closePairModal() {
+            pendingEan = null;
+            isProcessingScan = false;
+            document.getElementById('pairModal').classList.add('hidden');
+        }
+
+        // ORDER SUMMARY MODAL
+        function createModalRow(title, qty, priceCzk) {
+            const row = document.createElement('div');
+            row.className = 'flex justify-between items-center border-b pb-2 text-xs';
+            row.innerHTML = `
+                <div>
+                    <div class="font-semibold text-gray-200">${title}</div>
+                    <div class="text-10 text-gray-400">${qty} ks</div>
+                </div>
+                <div class="font-bold ${priceCzk < 0 ? 'text-emerald' : 'text-brand'} text-sm">${formatPrice(priceCzk)}</div>
+            `;
+            return row;
+        }
+
+        function openModal() {
+            const container = document.getElementById('modalOrderItems');
+            container.innerHTML = '';
+
+            let hasItems = false;
+            let totalBevCzk = 0;
+            let totalDepCzk = 0;
+
+            PRODUCTS.forEach(p => {
+                Object.keys(p.prices).forEach(fmtKey => {
+                    const qty = state[p.id][fmtKey] || 0;
+                    if (qty > 0) {
+                        hasItems = true;
+                        const priceCzk = qty * p.prices[fmtKey];
+                        totalBevCzk += priceCzk;
+
+                        const fmtName = FORMAT_NAMES[fmtKey] || fmtKey;
+                        container.appendChild(createModalRow(`${p.name} - ${fmtName}`, qty, priceCzk));
+
+                        if (KEG_KEYS.includes(fmtKey)) {
+                            const depRate = p.type === 'limo' ? DEPOSIT_LIMO : DEPOSIT_BEER;
+                            const depPriceCzk = qty * depRate;
+                            totalDepCzk += depPriceCzk;
+                            container.appendChild(createModalRow(`ZÁLOHA NA SUD: ${p.name} (${fmtName})`, qty, depPriceCzk));
+                        }
+                    }
+                });
+            });
+
+            if (returnedBeerKegs > 0) {
+                hasItems = true;
+                const creditCzk = returnedBeerKegs * DEPOSIT_BEER;
+                totalDepCzk -= creditCzk;
+                container.appendChild(createModalRow(`VRÁCENÉ SUDY PIVO (-1200 Kč/ks)`, returnedBeerKegs, -creditCzk));
+            }
+            if (returnedLimoKegs > 0) {
+                hasItems = true;
+                const creditCzk = returnedLimoKegs * DEPOSIT_LIMO;
+                totalDepCzk -= creditCzk;
+                container.appendChild(createModalRow(`VRÁCENÉ SUDY LIMO (-1000 Kč/ks)`, returnedLimoKegs, -creditCzk));
+            }
+            if (cratesQty !== 0) {
+                hasItems = true;
+                const cratePriceCzk = cratesQty * DEPOSIT_CRATE;
+                totalDepCzk += cratePriceCzk
