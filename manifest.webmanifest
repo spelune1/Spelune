@@ -1,0 +1,14 @@
+{
+  "name": "Pivovar Rudohor - Objednávky",
+  "short_name": "Rudohor",
+  "description": "Offline objednávková kalkulačka a dodací listy Pivovar Rudohor s.r.o.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f0f11",
+  "theme_color": "#0f0f11",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
