@@ -1,0 +1,1 @@
+Rudohor – UniCredit Bank. Tisk z archivu nyní používá iframe místo popup okna, což je kompatibilnější s Androidem. PDF/tisk je třeba vyzkoušet na zařízení. mailto neumí samo připojit PDF; příloha vyžaduje generování PDF souboru a systémové sdílení.
